@@ -588,10 +588,10 @@ export default function App() {
       }`}>
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>
-            Ministerio de Hacienda de Costa Rica · Dirección General de Tributación · Formato v4.3
+            {t.footerAuthority}
           </span>
           <span className="font-mono text-[11px] text-slate-500">
-            Firma XAdES-EPES · Ley 8454 · Bóveda Cifrada AES-256-GCM
+            {t.footerSecurity}
           </span>
         </div>
       </footer>
@@ -606,6 +606,8 @@ export default function App() {
 
       {isSettingsOpen && (
         <SandboxSettingsModal
+          lang={lang}
+          theme={theme}
           taxpayer={company}
           onSave={handleSaveTaxpayerConfig}
           onTriggerScenario={handleTriggerScenario}

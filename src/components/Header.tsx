@@ -29,7 +29,7 @@ import {
   Scale,
   Shield,
 } from 'lucide-react';
-import { Language, translations } from '../i18n';
+import { Language, translations, localizeNotification } from '../i18n';
 import { Company, NotificationItem, User, SchemaVersion } from '../types';
 
 interface HeaderProps {
@@ -323,12 +323,12 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Settings & Credentials */}
             <button
               onClick={onOpenSettings}
-              className={`p-2 rounded-lg border transition-colors ${
+              className={`p-2 rounded-lg border transition-colors cursor-pointer ${
                 theme === 'bright'
                   ? 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
                   : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'
               }`}
-              title="Configuración de Hacienda y Certificado .p12"
+              title={t.settingsTooltip}
             >
               <Sliders className="w-4 h-4" />
             </button>
@@ -337,12 +337,12 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="relative">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
-                className={`relative p-2 rounded-lg border transition-colors ${
+                className={`relative p-2 rounded-lg border transition-colors cursor-pointer ${
                   theme === 'bright'
                     ? 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
                     : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'
                 }`}
-                title="Notificaciones"
+                title={t.notificationsTitle}
               >
                 <Bell className="w-4 h-4" />
                 {unreadCount > 0 && (
@@ -360,34 +360,37 @@ export const Header: React.FC<HeaderProps> = ({
                     theme === 'bright' ? 'bg-slate-50 border-slate-200' : 'bg-slate-800/80 border-slate-700'
                   }`}>
                     <span className="text-xs font-semibold uppercase tracking-wider">
-                      Notificaciones ({notifications.length})
+                      {t.notificationsTitle} ({notifications.length})
                     </span>
                     {notifications.length > 0 && (
-                      <button onClick={onClearNotifications} className="text-xs text-slate-400 hover:text-rose-400 flex items-center space-x-1">
+                      <button onClick={onClearNotifications} className="text-xs text-slate-400 hover:text-rose-400 flex items-center space-x-1 cursor-pointer">
                         <Trash2 className="w-3.5 h-3.5" />
-                        <span>Limpiar</span>
+                        <span>{t.notificationsClear}</span>
                       </button>
                     )}
                   </div>
                   <div className="max-h-80 overflow-y-auto divide-y divide-slate-800">
                     {notifications.length === 0 ? (
                       <div className="p-6 text-center text-xs text-slate-500">
-                        {lang === 'en' ? 'No pending notifications.' : 'No hay notificaciones pendientes.'}
+                        {t.notificationsEmpty}
                       </div>
                     ) : (
-                      notifications.map((item) => (
-                        <div key={item.id} className="p-3 hover:bg-slate-800/40 text-xs flex items-start space-x-2.5">
-                          {item.type === 'SUCCESS' && <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />}
-                          {item.type === 'ERROR' && <XCircle className="w-4 h-4 text-rose-400 mt-0.5 shrink-0" />}
-                          <div className="flex-1 min-w-0">
-                            <div className="font-semibold">{item.title}</div>
-                            <p className="text-slate-400 text-[11px] mt-0.5 line-clamp-2">{item.message}</p>
-                            <span className="text-[10px] text-slate-500 mt-1 block">
-                              {new Date(item.timestamp).toLocaleTimeString('es-CR')}
-                            </span>
+                      notifications.map((item) => {
+                        const localized = localizeNotification(lang, item.title, item.message);
+                        return (
+                          <div key={item.id} className="p-3 hover:bg-slate-800/40 text-xs flex items-start space-x-2.5">
+                            {item.type === 'SUCCESS' && <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />}
+                            {item.type === 'ERROR' && <XCircle className="w-4 h-4 text-rose-400 mt-0.5 shrink-0" />}
+                            <div className="flex-1 min-w-0">
+                              <div className="font-semibold">{localized.title}</div>
+                              <p className="text-slate-400 text-[11px] mt-0.5 line-clamp-2">{localized.message}</p>
+                              <span className="text-[10px] text-slate-500 mt-1 block">
+                                {new Date(item.timestamp).toLocaleTimeString(lang === 'en' ? 'en-US' : 'es-CR')}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      ))
+                        );
+                      })
                     )}
                   </div>
                 </div>

@@ -220,6 +220,80 @@ export interface Translations {
   print: string;
   testScenariosBtn: string;
   reportsD104Btn: string;
+
+  // Notifications & Header
+  notificationsTitle: string;
+  notificationsClear: string;
+  notificationsEmpty: string;
+  settingsTooltip: string;
+
+  // Footer
+  footerAuthority: string;
+  footerSecurity: string;
+
+  // Sandbox & Vault Settings Modal
+  cfgModalTitle: string;
+  cfgModalSubtitle: string;
+  cfgTabHacienda: string;
+  cfgTabScenarios: string;
+  cfgTabVault: string;
+  cfgVersionTitle: string;
+  cfgV44Title: string;
+  cfgV44Badge: string;
+  cfgV44Desc: string;
+  cfgV43Title: string;
+  cfgV43Badge: string;
+  cfgV43Desc: string;
+  cfgSandboxModeTitle: string;
+  cfgSimTitle: string;
+  cfgSimDesc: string;
+  cfgLiveTitle: string;
+  cfgLiveDesc: string;
+  cfgTaxpayerName: string;
+  cfgTaxpayerId: string;
+  cfgEconomicCode: string;
+  cfgTaxRegime: string;
+  cfgRegimeTraditional: string;
+  cfgRegimeSimplified: string;
+  cfgRegimeFreeZone: string;
+  cfgRegimeAgro: string;
+  cfgAtvTitle: string;
+  cfgAtvUsername: string;
+  cfgAtvPassword: string;
+  cfgAtvEncryptedPass: string;
+  cfgAtvEnterPass: string;
+  cfgP12Title: string;
+  cfgP12Badge: string;
+  cfgP12Pin: string;
+  cfgP12PinPlaceholder: string;
+  cfgP12Upload: string;
+  cfgP12SelectFile: string;
+  cfgBtnSave: string;
+  cfgBtnSaving: string;
+  cfgScenariosDesc: string;
+  cfgScen1Title: string;
+  cfgScen1Desc: string;
+  cfgScen2Title: string;
+  cfgScen2Desc: string;
+  cfgScen3Title: string;
+  cfgScen3Desc: string;
+  cfgScen4Title: string;
+  cfgScen4Desc: string;
+  cfgScen5Title: string;
+  cfgScen5Desc: string;
+  cfgScen6Title: string;
+  cfgScen6Desc: string;
+  cfgScen7Title: string;
+  cfgScen7Desc: string;
+  cfgScen8Title: string;
+  cfgScen8Desc: string;
+  cfgBtnTest: string;
+  cfgVaultTitle: string;
+  cfgVaultDesc: string;
+  cfgVaultAlgo: string;
+  cfgVaultSig: string;
+  cfgVaultMasking: string;
+  cfgVaultMaskingActive: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -436,6 +510,80 @@ export const translations: Record<Language, Translations> = {
     print: 'Print Document',
     testScenariosBtn: 'Sandbox Scenarios',
     reportsD104Btn: 'D-104 Report',
+
+    // Notifications & Header
+    notificationsTitle: 'Notifications',
+    notificationsClear: 'Clear',
+    notificationsEmpty: 'No pending notifications.',
+    settingsTooltip: 'Hacienda Sandbox & .p12 Certificate Settings',
+
+    // Footer
+    footerAuthority: 'Ministry of Finance of Costa Rica · General Directorate of Taxation · Formats v4.3 & v4.4',
+    footerSecurity: 'XAdES-EPES Digital Signature · Law 8454 · AES-256-GCM Encrypted Storage',
+
+    // Sandbox & Vault Settings Modal
+    cfgModalTitle: 'Ministerio de Hacienda Sandbox & Cryptographic Vault Settings',
+    cfgModalSubtitle: 'Official ATV connection parameters, .p12 cryptographic certificate, and tax compliance test regimes.',
+    cfgTabHacienda: 'Sandbox Credentials & .p12 Certificate',
+    cfgTabScenarios: 'Preconfigured Tax Scenarios',
+    cfgTabVault: 'AES-256-GCM Vault Security',
+    cfgVersionTitle: 'Electronic Invoicing Version (Ministerio de Hacienda)',
+    cfgV44Title: 'Version 4.4 (TRIBU-CR / In Effect)',
+    cfgV44Badge: 'Recommended',
+    cfgV44Desc: 'XML v4.4 schemas, Payment Electronic Receipt (REP), dedicated SINPE Móvil code 05, and "No Sujeto" vs "Exento" separation.',
+    cfgV43Title: 'Version 4.3 (Previous Standard / ATV)',
+    cfgV43Badge: 'Legacy',
+    cfgV43Desc: 'XML v4.3 schemas (Resolution DGT-R-033-2019), standard electronic invoices, Credit/Debit Notes, and tickets without REP.',
+    cfgSandboxModeTitle: 'Tax Sandbox Operation Mode',
+    cfgSimTitle: 'Smart Sandbox Simulator',
+    cfgSimDesc: 'Emulates 100% of Hacienda API v4.3 & v4.4, validates XAdES-EPES signatures, produces official RespuestaHacienda, and tests immediately.',
+    cfgLiveTitle: 'Live ATV Sandbox (Staging)',
+    cfgLiveDesc: 'Connects via proxy to idp.comprobanteselectronicos.go.cr and api.comprobanteselectronicos.go.cr/recepcion-sandbox/v1/ with live credentials.',
+    cfgTaxpayerName: 'Taxpayer Name / Legal Corporate Name',
+    cfgTaxpayerId: 'Issuer Tax ID (Cédula)',
+    cfgEconomicCode: 'Economic Activity Code (6 digits)',
+    cfgTaxRegime: 'Tax Regime',
+    cfgRegimeTraditional: 'Traditional / General Regime',
+    cfgRegimeSimplified: 'Simplified Tax Regime',
+    cfgRegimeFreeZone: 'Free Trade Zone Regime',
+    cfgRegimeAgro: 'Agricultural Regime',
+    cfgAtvTitle: 'ATV API Credentials (Ministerio de Hacienda)',
+    cfgAtvUsername: 'ATV Username (IDP Stag)',
+    cfgAtvPassword: 'ATV API Password',
+    cfgAtvEncryptedPass: '•••••••••••• (Encrypted in Vault)',
+    cfgAtvEnterPass: 'Enter API password',
+    cfgP12Title: 'PKCS#12 (.p12) Cryptographic Certificate',
+    cfgP12Badge: 'XAdES-EPES Signature',
+    cfgP12Pin: 'Cryptographic Key PIN',
+    cfgP12PinPlaceholder: '4-digit PIN (e.g. 1234)',
+    cfgP12Upload: 'Upload .p12 File',
+    cfgP12SelectFile: 'Select official .p12 certificate',
+    cfgBtnSave: 'Save & Secure in Vault',
+    cfgBtnSaving: 'Saving in Vault...',
+    cfgScenariosDesc: 'Execute official test scenarios with one click as required by Ministerio de Hacienda for certification:',
+    cfgScen1Title: '1. General Sale 13% VAT',
+    cfgScen1Desc: 'Traditional Regime, standard invoice with general VAT (Rate 08).',
+    cfgScen2Title: '2. Healthcare Services 4% VAT',
+    cfgScen2Desc: 'Reduced rate according to Art. 26 Law 9635 for private healthcare.',
+    cfgScen3Title: '3. Tourism Services 8% VAT',
+    cfgScen3Desc: 'Transitory rate Law 9882 for lodging and certified ICT travel agencies.',
+    cfgScen4Title: '4. Export Invoice (FEE 09)',
+    cfgScen4Desc: 'Services exported in USD, 0% Exempt rate to non-resident foreign client.',
+    cfgScen5Title: '5. Purchase Invoice (FEC 08)',
+    cfgScen5Desc: 'Purchase from unregistered vendor in Simplified Taxation Regime.',
+    cfgScen6Title: '6. Duplicate Clave Test (Rejection)',
+    cfgScen6Desc: 'Simulates 400 rejection from Hacienda for duplicate numeric clave.',
+    cfgScen7Title: '7. Invalid Signature Test (Rejection)',
+    cfgScen7Desc: 'Simulates rejection for untrusted certificate or corrupt digest.',
+    cfgScen8Title: '8. 503 Outage & Auto-Retry Test',
+    cfgScen8Desc: 'Simulates transient HTTP 503 outage and triggers exponential retry queue.',
+    cfgBtnTest: 'Test',
+    cfgVaultTitle: 'Cryptographic Security Vault & Financial Record Protection',
+    cfgVaultDesc: 'To comply with tax security directives, all financial records, PKCS#12 certificates, private keys, and Ministry credentials are encrypted using authenticated AES-256-GCM with PBKDF2 key derivation and distinct IVs per transaction.',
+    cfgVaultAlgo: 'Vault Algorithm',
+    cfgVaultSig: 'Digital Signature',
+    cfgVaultMasking: 'PII Masking',
+    cfgVaultMaskingActive: 'Active in Audit Trail',
   },
   es: {
     // Brand & Header
@@ -650,5 +798,104 @@ export const translations: Record<Language, Translations> = {
     print: 'Imprimir',
     testScenariosBtn: 'Escenarios Sandbox',
     reportsD104Btn: 'Reporte D-104',
+
+    // Notifications & Header
+    notificationsTitle: 'Notificaciones',
+    notificationsClear: 'Limpiar',
+    notificationsEmpty: 'No hay notificaciones pendientes.',
+    settingsTooltip: 'Configuración de Hacienda y Certificado .p12',
+
+    // Footer
+    footerAuthority: 'Ministerio de Hacienda de Costa Rica · Dirección General de Tributación · Formato v4.3 / v4.4',
+    footerSecurity: 'Firma XAdES-EPES · Ley 8454 · Bóveda Cifrada AES-256-GCM',
+
+    // Sandbox & Vault Settings Modal
+    cfgModalTitle: 'Configuración del Sandbox Ministerio de Hacienda & Bóveda Criptográfica',
+    cfgModalSubtitle: 'Parámetros oficiales de conexión ATV, llave criptográfica .p12 y escenarios tributarios.',
+    cfgTabHacienda: 'Credenciales Sandbox & Certificado .p12',
+    cfgTabScenarios: 'Escenarios Tributarios Preconfigurados',
+    cfgTabVault: 'Seguridad Bóveda AES-256-GCM',
+    cfgVersionTitle: 'Versión de Factura Electrónica (Ministerio de Hacienda)',
+    cfgV44Title: 'Versión 4.4 (TRIBU-CR / Vigente)',
+    cfgV44Badge: 'Recomendado',
+    cfgV44Desc: 'Esquemas XML v4.4, Recibo Electrónico de Pago (REP), soporte dedicado para SINPE Móvil, y desglose de "No Sujeto" vs "Exento".',
+    cfgV43Title: 'Versión 4.3 (Estándar Previo / ATV)',
+    cfgV43Badge: 'Legacy',
+    cfgV43Desc: 'Esquemas XML v4.3 (Resolución DGT-R-033-2019), Factura tradicional, Notas de Crédito/Débito y Tiquetes sin REP.',
+    cfgSandboxModeTitle: 'Modalidad de Sandbox Tributario',
+    cfgSimTitle: 'Sandbox Simulador Inteligente',
+    cfgSimDesc: 'Emula 100% de la API de Hacienda v4.3 & v4.4, valida firmas XAdES-EPES, genera RespuestaHacienda oficial, y permite probar de inmediato sin esperar credenciales ATV.',
+    cfgLiveTitle: 'Sandbox en Vivo ATV (Staging)',
+    cfgLiveDesc: 'Conecta vía proxy a idp.comprobanteselectronicos.go.cr y api.comprobanteselectronicos.go.cr/recepcion-sandbox/v1/ con tus credenciales reales.',
+    cfgTaxpayerName: 'Nombre / Razón Social Contribuyente',
+    cfgTaxpayerId: 'Cédula del Emisor',
+    cfgEconomicCode: 'Código de Actividad Económica (6 dígitos)',
+    cfgTaxRegime: 'Régimen Tributario',
+    cfgRegimeTraditional: 'Régimen Tradicional (General)',
+    cfgRegimeSimplified: 'Régimen de Tributación Simplificada',
+    cfgRegimeFreeZone: 'Régimen de Zona Franca',
+    cfgRegimeAgro: 'Régimen Agropecuario',
+    cfgAtvTitle: 'Credenciales de API ATV (Ministerio de Hacienda)',
+    cfgAtvUsername: 'Usuario ATV (IDP Stag)',
+    cfgAtvPassword: 'Contraseña API ATV',
+    cfgAtvEncryptedPass: '•••••••••••• (Cifrada en bóveda)',
+    cfgAtvEnterPass: 'Ingresa contraseña API',
+    cfgP12Title: 'Certificado Criptográfico PKCS#12 (.p12)',
+    cfgP12Badge: 'Firma XAdES-EPES',
+    cfgP12Pin: 'PIN de la Llave Criptográfica',
+    cfgP12PinPlaceholder: 'PIN de 4 dígitos (ej: 1234)',
+    cfgP12Upload: 'Subir Archivo .p12',
+    cfgP12SelectFile: 'Seleccionar .p12 oficial',
+    cfgBtnSave: 'Guardar y Asegurar en Bóveda',
+    cfgBtnSaving: 'Guardando en Bóveda...',
+    cfgScenariosDesc: 'Ejecuta con un clic los escenarios de prueba oficiales requeridos por el Ministerio de Hacienda para certificar sistemas de facturación:',
+    cfgScen1Title: '1. Venta General 13% IVA',
+    cfgScen1Desc: 'Régimen Tradicional, factura estándar con IVA general (Tarifa 08).',
+    cfgScen2Title: '2. Servicios de Salud 4% IVA',
+    cfgScen2Desc: 'Tarifa Reducida según Art. 26 Ley 9635 para servicios médicos.',
+    cfgScen3Title: '3. Servicios de Turismo 8% IVA',
+    cfgScen3Desc: 'Tarifa Transitoria Ley 9882 para hospedaje y agencias registradas ante ICT.',
+    cfgScen4Title: '4. Factura Exportación (FEE 09)',
+    cfgScen4Desc: 'Servicios exportados en USD, tarifa 0% Exento a cliente no residente.',
+    cfgScen5Title: '5. Factura de Compra (FEC 08)',
+    cfgScen5Desc: 'Compra a proveedor en Régimen de Tributación Simplificada.',
+    cfgScen6Title: '6. Prueba Clave Duplicada (Rechazo)',
+    cfgScen6Desc: 'Simula rechazo 400 de Hacienda por clave previamente registrada.',
+    cfgScen7Title: '7. Prueba Firma Inválida (Rechazo)',
+    cfgScen7Desc: 'Simulates rejection for untrusted certificate or corrupt digest.',
+    cfgScen8Title: '8. Prueba Caída 503 & Reintento',
+    cfgScen8Desc: 'Simula caída transitoria HTTP 503 y activa cola de reintentos exponenciales.',
+    cfgBtnTest: 'Probar',
+    cfgVaultTitle: 'Bóveda de Seguridad Criptográfica y Registros Financieros',
+    cfgVaultDesc: 'Para cumplir con la directriz de seguridad de datos tributarios, todos los registros financieros, certificados PKCS#12, llaves privadas y credenciales del Ministerio de Hacienda se resguardan mediante cifrado autenticado AES-256-GCM con derivación PBKDF2 y vectores de inicialización (IV) criptográficamente seguros por cada transacción.',
+    cfgVaultAlgo: 'Algoritmo Bóveda',
+    cfgVaultSig: 'Firma Digital',
+    cfgVaultMasking: 'Enmascaramiento',
+    cfgVaultMaskingActive: 'Activo en Auditoría',
   },
 };
+
+/**
+ * Helper to localize notification title and message dynamically if emitted in Spanish.
+ */
+export function localizeNotification(lang: Language, title: string, message: string): { title: string; message: string } {
+  if (lang === 'es') return { title, message };
+
+  let locTitle = title;
+  let locMsg = message;
+
+  if (title.includes('Lote de Facturación Masiva')) locTitle = 'Bulk Invoicing Batch';
+  else if (title.includes('Versión de Esquema Actualizada')) locTitle = 'Schema Version Updated';
+  else if (title.includes('Nueva empresa registrada')) locTitle = 'New Company Registered';
+  else if (title.includes('Comprobante')) locTitle = 'Electronic Document';
+  else if (title.includes('Firma')) locTitle = 'Cryptographic Signature';
+  else if (title.includes('Hacienda')) locTitle = 'Tax Authority Update';
+
+  if (message.includes('Se emitieron y firmaron')) {
+    locMsg = message.replace(/Se emitieron y firmaron (\d+) comprobantes para (.+)/, 'Generated and digitally signed $1 documents for $2');
+  } else if (message.includes('ahora opera bajo la especificación')) {
+    locMsg = message.replace(/La empresa (.+) ahora opera bajo la especificación v([\d.]+) del Ministerio de Hacienda\./, 'Company $1 now operates under Ministerio de Hacienda v$2 specification.');
+  }
+
+  return { title: locTitle, message: locMsg };
+}
