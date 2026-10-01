@@ -1,0 +1,6 @@
+{
+  "name": "CR Factura Electrónica Hub",
+  "description": "Costa Rica Ministerio de Hacienda v4.3 Electronic Invoicing & Reception Platform with Cryptographic XAdES Signing, Sandbox Automation, and Real-Time Compliance Audit Trails.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
