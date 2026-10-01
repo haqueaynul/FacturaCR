@@ -1,6 +1,7 @@
 /**
  * @file src/types/index.ts
- * @description TypeScript type definitions for Costa Rica Factura Electrónica v4.3 integration.
+ * @description TypeScript type definitions for Costa Rica Factura Electrónica v4.3 integration,
+ * multi-user roles (Accountants, Lawyers, Admins), multi-company management, and compliance reports.
  */
 
 export type DocumentType = '01' | '02' | '03' | '04' | '08' | '09';
@@ -17,15 +18,27 @@ export type DocumentStatus =
 
 export type TaxRegime = 'tradicional' | 'simplificado' | 'zona_franca' | 'agropecuario';
 
-export interface TaxpayerConfig {
-  cedula: string;
-  tipoCedula: '01' | '02' | '03' | '04';
+export type UserRole = 'admin' | 'accountant' | 'lawyer';
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  licenseNumber?: string; // CPA number or Bar Association number
+  companyIds: string[]; // Companies user has access to
+}
+
+export interface Company {
+  id: string;
   nombre: string;
   nombreComercial?: string;
-  correo: string;
-  telefono?: string;
+  cedula: string;
+  tipoCedula: '01' | '02' | '03' | '04';
   codigoActividad: string;
   regimenTributario: TaxRegime;
+  correo: string;
+  telefono?: string;
   sucursal: string;
   puntoVenta: string;
   atvUsername: string;
@@ -33,6 +46,14 @@ export interface TaxpayerConfig {
   hasP12Certificate?: boolean;
   hasPin?: boolean;
   useLiveSandbox: boolean;
+  // Legal & Audit Status
+  p12Status: 'valid' | 'expiring' | 'expired';
+  p12ExpiryDate: string;
+  personeriaStatus: 'vigente' | 'tramite';
+  personeriaNumber: string;
+  personeriaExpiry: string;
+  assignedAccountantId?: string;
+  assignedLawyerId?: string;
 }
 
 export interface DocumentItem {
@@ -54,6 +75,7 @@ export interface DocumentItem {
 
 export interface ElectronicDocument {
   id: string;
+  companyId?: string;
   clave: string;
   consecutivo: string;
   tipoDocumento: DocumentType;
@@ -110,6 +132,7 @@ export interface ElectronicDocument {
 
 export interface ReceptionDocument {
   id: string;
+  companyId?: string;
   claveDocumento: string;
   numeroConsecutivoReceptor: string;
   fechaEmisionDoc: string;
@@ -129,8 +152,9 @@ export interface ReceptionDocument {
 
 export interface AuditLogEntry {
   id: string;
+  companyId?: string;
   timestamp: string;
-  step: 'GENERATION' | 'SIGNING' | 'AUTH' | 'SUBMISSION' | 'POLLING' | 'RETRY' | 'RECEPTION' | 'SECURITY';
+  step: 'GENERATION' | 'SIGNING' | 'AUTH' | 'SUBMISSION' | 'POLLING' | 'RETRY' | 'RECEPTION' | 'SECURITY' | 'LEGAL' | 'ACCOUNTING';
   status: 'SUCCESS' | 'WARNING' | 'ERROR' | 'INFO';
   clave?: string;
   endpoint?: string;
@@ -138,6 +162,7 @@ export interface AuditLogEntry {
   durationMs?: number;
   message: string;
   payloadSummary?: string;
+  performedBy?: string;
   details?: Record<string, unknown>;
 }
 
@@ -173,3 +198,30 @@ export interface CabysItem {
   codigoTarifa: string;
   categoria: string;
 }
+
+export interface StepGuideSuggestion {
+  id: string;
+  stepNumber: number;
+  title: string;
+  message: string;
+  actionText: string;
+  actionType: 'sign_submit' | 'check_async' | 'view_xml' | 'b2b_reception' | 'retry_transient' | 'open_accountant' | 'open_lawyer';
+  targetDocId?: string;
+}
+
+export interface CompanyAccountingReport {
+  company: Company;
+  summary?: TaxReportSummary;
+  salesCount: number;
+  purchasesCount: number;
+  rejectionsCount: number;
+  totalVentas: number;
+  ivaDebito: number;
+  ivaCredito: number;
+  ivaBalance: number;
+  generatedAt: string;
+  certifiedByLawyer?: string;
+  certifiedByAccountant?: string;
+}
+
+export type TaxpayerConfig = Company;

@@ -3,7 +3,7 @@
  * @description API client for Costa Rica Factura Electrónica v4.3 backend.
  * Provides documented methods for document creation, XAdES-EPES cryptographic signing,
  * sandbox submission, asynchronous status polling, B2B reception, bulk processing,
- * and compliance reporting.
+ * multi-user authentication, multi-company registration, and compliance reporting.
  */
 
 import {
@@ -13,13 +13,107 @@ import {
   AuditLogEntry,
   NotificationItem,
   TaxReportSummary,
+  User,
+  Company,
+  CompanyAccountingReport,
 } from '../types';
 
 /**
- * Fetches current taxpayer configuration and security vault status.
- * @returns {Promise<TaxpayerConfig>} Taxpayer details and sandbox mode.
+ * Fetches current authenticated user.
  */
-export async function fetchTaxpayerConfig(): Promise<TaxpayerConfig> {
+export async function fetchCurrentUser(): Promise<User> {
+  const res = await fetch('/api/auth/me');
+  if (!res.ok) throw new Error('Error al obtener usuario actual.');
+  const data = await res.json();
+  return data.user;
+}
+
+/**
+ * Signs in a user by email and password.
+ */
+export async function signIn(email: string, password?: string): Promise<User> {
+  const res = await fetch('/api/auth/signin', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Credenciales inválidas.');
+  }
+  const data = await res.json();
+  return data.user;
+}
+
+/**
+ * Registers a new user with specific role (Accountant, Lawyer, Admin).
+ */
+export async function signUp(
+  name: string,
+  email: string,
+  password?: string,
+  role: string = 'accountant',
+  licenseNumber?: string
+): Promise<User> {
+  const res = await fetch('/api/auth/signup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, password, role, licenseNumber }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Error al registrar usuario.');
+  }
+  const data = await res.json();
+  return data.user;
+}
+
+/**
+ * Signs out current user.
+ */
+export async function signOut(): Promise<void> {
+  await fetch('/api/auth/signout', { method: 'POST' });
+}
+
+/**
+ * Lists all companies accessible by current user (or all if admin).
+ */
+export async function fetchCompanies(): Promise<Company[]> {
+  const res = await fetch('/api/companies');
+  if (!res.ok) throw new Error('Error al listar empresas.');
+  return res.json();
+}
+
+/**
+ * Registers a new client company.
+ */
+export async function registerCompany(payload: Record<string, unknown>): Promise<Company> {
+  const res = await fetch('/api/companies', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Error al registrar empresa.');
+  }
+  return res.json();
+}
+
+/**
+ * Switches the active company session.
+ */
+export async function activateCompany(companyId: string): Promise<Company> {
+  const res = await fetch(`/api/companies/${companyId}/activate`, { method: 'POST' });
+  if (!res.ok) throw new Error('Error al cambiar empresa activa.');
+  const data = await res.json();
+  return data.activeCompany;
+}
+
+/**
+ * Fetches active company configuration.
+ */
+export async function fetchTaxpayerConfig(): Promise<Company> {
   const res = await fetch('/api/config');
   if (!res.ok) throw new Error('Error al obtener la configuración del contribuyente.');
   return res.json();
@@ -27,11 +121,9 @@ export async function fetchTaxpayerConfig(): Promise<TaxpayerConfig> {
 
 /**
  * Updates taxpayer configuration, ATV credentials, and cryptographic certificate.
- * @param {Partial<TaxpayerConfig> & { atvPassword?: string; pinP12?: string; p12CertificateBase64?: string }} data - Config payload.
- * @returns {Promise<{ success: boolean; message: string }>} Server response.
  */
 export async function updateTaxpayerConfig(
-  data: Partial<TaxpayerConfig> & { atvPassword?: string; pinP12?: string; p12CertificateBase64?: string }
+  data: Partial<Company> & { atvPassword?: string; pinP12?: string; p12CertificateBase64?: string }
 ): Promise<{ success: boolean; message: string }> {
   const res = await fetch('/api/config', {
     method: 'POST',
@@ -43,13 +135,11 @@ export async function updateTaxpayerConfig(
 }
 
 /**
- * Lists all electronic documents stored in the system.
- * @param {string} [estado] - Optional filter by status ('aceptado', 'procesando', 'rechazado', etc.).
- * @param {string} [tipo] - Optional filter by document type ('01', '04', etc.).
- * @returns {Promise<ElectronicDocument[]>} Array of electronic documents.
+ * Lists electronic documents.
  */
-export async function fetchDocuments(estado?: string, tipo?: string): Promise<ElectronicDocument[]> {
+export async function fetchDocuments(companyId?: string, estado?: string, tipo?: string): Promise<ElectronicDocument[]> {
   const params = new URLSearchParams();
+  if (companyId) params.append('companyId', companyId);
   if (estado) params.append('estado', estado);
   if (tipo) params.append('tipo', tipo);
   const url = `/api/documents${params.toString() ? '?' + params.toString() : ''}`;
@@ -60,8 +150,6 @@ export async function fetchDocuments(estado?: string, tipo?: string): Promise<El
 
 /**
  * Creates and digitally signs a new Factura Electrónica v4.3 document.
- * @param {Record<string, unknown>} payload - Document header, receptor, and line items.
- * @returns {Promise<ElectronicDocument>} Created and signed document.
  */
 export async function createDocument(payload: Record<string, unknown>): Promise<ElectronicDocument> {
   const res = await fetch('/api/documents', {
@@ -77,9 +165,7 @@ export async function createDocument(payload: Record<string, unknown>): Promise<
 }
 
 /**
- * Triggers manual submission or re-submission of an electronic document to Hacienda Sandbox.
- * @param {string} documentId - Document ID.
- * @returns {Promise<{ success: boolean; status: string; message: string }>} Submission outcome.
+ * Triggers manual submission or re-submission.
  */
 export async function submitDocument(documentId: string): Promise<{ success: boolean; status: string; message: string }> {
   const res = await fetch(`/api/documents/${documentId}/submit`, { method: 'POST' });
@@ -91,9 +177,7 @@ export async function submitDocument(documentId: string): Promise<{ success: boo
 }
 
 /**
- * Queries asynchronous processing status of a document from Hacienda Sandbox.
- * @param {string} documentId - Document ID.
- * @returns {Promise<Partial<ElectronicDocument>>} Updated document status details.
+ * Queries asynchronous processing status of a document.
  */
 export async function queryDocumentStatus(documentId: string): Promise<Partial<ElectronicDocument>> {
   const res = await fetch(`/api/documents/${documentId}/status`);
@@ -102,9 +186,7 @@ export async function queryDocumentStatus(documentId: string): Promise<Partial<E
 }
 
 /**
- * Submits B2B supplier reception (Mensaje Receptor 05, 06, 07).
- * @param {Record<string, unknown>} payload - B2B reception details.
- * @returns {Promise<ReceptionDocument>} Created reception record.
+ * Submits B2B supplier reception.
  */
 export async function submitB2BReception(payload: Record<string, unknown>): Promise<ReceptionDocument> {
   const res = await fetch('/api/reception', {
@@ -121,20 +203,16 @@ export async function submitB2BReception(payload: Record<string, unknown>): Prom
 
 /**
  * Fetches all B2B reception records.
- * @returns {Promise<ReceptionDocument[]>}
  */
-export async function fetchReceptions(): Promise<ReceptionDocument[]> {
-  const res = await fetch('/api/reception');
+export async function fetchReceptions(companyId?: string): Promise<ReceptionDocument[]> {
+  const url = companyId ? `/api/reception?companyId=${companyId}` : '/api/reception';
+  const res = await fetch(url);
   if (!res.ok) throw new Error('Error al obtener recepciones B2B.');
   return res.json();
 }
 
 /**
  * Executes bulk processing of multiple invoices.
- * @param {number} batchCount - Number of documents to generate.
- * @param {string} taxRegime - Tax regime.
- * @param {number} baseAmount - Base invoice amount.
- * @returns {Promise<{ success: boolean; batchSize: number }>}
  */
 export async function runBulkProcessing(
   batchCount: number,
@@ -151,9 +229,7 @@ export async function runBulkProcessing(
 }
 
 /**
- * Loads pre-configured test scenarios for sandbox verification.
- * @param {string} scenarioKey - Scenario identifier.
- * @returns {Promise<ElectronicDocument>} Created document under scenario rules.
+ * Loads pre-configured test scenarios.
  */
 export async function loadPresetScenario(scenarioKey: string): Promise<ElectronicDocument> {
   const res = await fetch('/api/sandbox/preset-scenario', {
@@ -166,18 +242,17 @@ export async function loadPresetScenario(scenarioKey: string): Promise<Electroni
 }
 
 /**
- * Fetches the real-time compliance audit log trail.
- * @returns {Promise<AuditLogEntry[]>} Array of logged events.
+ * Fetches real-time compliance audit logs.
  */
-export async function fetchAuditLogs(): Promise<AuditLogEntry[]> {
-  const res = await fetch('/api/logs');
+export async function fetchAuditLogs(companyId?: string): Promise<AuditLogEntry[]> {
+  const url = companyId ? `/api/logs?companyId=${companyId}` : '/api/logs';
+  const res = await fetch(url);
   if (!res.ok) throw new Error('Error al obtener registros de auditoría.');
   return res.json();
 }
 
 /**
  * Fetches system notifications.
- * @returns {Promise<NotificationItem[]>}
  */
 export async function fetchNotifications(): Promise<NotificationItem[]> {
   const res = await fetch('/api/notifications');
@@ -187,7 +262,6 @@ export async function fetchNotifications(): Promise<NotificationItem[]> {
 
 /**
  * Clears in-app notifications.
- * @returns {Promise<{ success: boolean }>}
  */
 export async function clearNotifications(): Promise<{ success: boolean }> {
   const res = await fetch('/api/notifications/clear', { method: 'POST' });
@@ -197,10 +271,19 @@ export async function clearNotifications(): Promise<{ success: boolean }> {
 
 /**
  * Computes tax analytics, IVA debit, credit, and transmission metrics.
- * @returns {Promise<TaxReportSummary>} Tax summary calculations.
  */
-export async function fetchTaxSummary(): Promise<TaxReportSummary> {
-  const res = await fetch('/api/reports/summary');
+export async function fetchTaxSummary(companyId?: string): Promise<TaxReportSummary> {
+  const url = companyId ? `/api/reports/summary?companyId=${companyId}` : '/api/reports/summary';
+  const res = await fetch(url);
   if (!res.ok) throw new Error('Error al calcular el resumen tributario.');
+  return res.json();
+}
+
+/**
+ * Fetches consolidated company accounting report for Admin Hub.
+ */
+export async function fetchAdminCompanyReport(companyId: string): Promise<CompanyAccountingReport> {
+  const res = await fetch(`/api/admin/reports/${companyId}`);
+  if (!res.ok) throw new Error('Error al generar reporte contable consolidado.');
   return res.json();
 }

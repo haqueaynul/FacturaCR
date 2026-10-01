@@ -1,7 +1,7 @@
 /**
  * @file src/components/Header.tsx
- * @description Main application navigation header displaying system environment,
- * IDP token status, cryptographic vault state, notifications drawer, and action shortcuts.
+ * @description Main application navigation header with theme switching (Dark / Bright),
+ * language switching (EN / ES), multi-company session switcher, and user role profile.
  */
 
 import React, { useState } from 'react';
@@ -10,20 +10,41 @@ import {
   Bell,
   RefreshCw,
   FileCheck,
-  AlertTriangle,
   Key,
   CheckCircle2,
   XCircle,
   HelpCircle,
   Sliders,
   Trash2,
-  ExternalLink,
+  Sun,
+  Moon,
+  Globe,
+  Building,
+  ChevronDown,
+  Plus,
+  User as UserIcon,
+  LogOut,
+  LogIn,
+  Calculator,
+  Scale,
+  Shield,
 } from 'lucide-react';
-import { TaxpayerConfig, NotificationItem } from '../types';
+import { Language, translations } from '../i18n';
+import { Company, NotificationItem, User } from '../types';
 
 interface HeaderProps {
-  taxpayer: TaxpayerConfig | null;
+  lang: Language;
+  theme: 'dark' | 'bright';
+  company: Company | null;
+  companies: Company[];
+  user: User | null;
   notifications: NotificationItem[];
+  onToggleTheme: () => void;
+  onToggleLang: () => void;
+  onSelectCompany: (companyId: string) => void;
+  onOpenNewCompany: () => void;
+  onOpenAuth: () => void;
+  onSignOut: () => void;
   onOpenSettings: () => void;
   onOpenReports: () => void;
   onOpenTestScenarios: () => void;
@@ -32,12 +53,19 @@ interface HeaderProps {
   isRefreshing: boolean;
 }
 
-/**
- * Header component with real-time sandbox status and compliance shortcuts.
- */
 export const Header: React.FC<HeaderProps> = ({
-  taxpayer,
+  lang,
+  theme,
+  company,
+  companies,
+  user,
   notifications,
+  onToggleTheme,
+  onToggleLang,
+  onSelectCompany,
+  onOpenNewCompany,
+  onOpenAuth,
+  onSignOut,
   onOpenSettings,
   onOpenReports,
   onOpenTestScenarios,
@@ -45,118 +73,232 @@ export const Header: React.FC<HeaderProps> = ({
   onRefreshAll,
   isRefreshing,
 }) => {
+  const t = translations[lang];
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showCompanyMenu, setShowCompanyMenu] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
   const unreadCount = notifications.filter((n) => !n.read).length;
 
+  const getRoleIcon = (role?: string) => {
+    switch (role) {
+      case 'accountant':
+        return <Calculator className="w-3.5 h-3.5 text-blue-400" />;
+      case 'lawyer':
+        return <Scale className="w-3.5 h-3.5 text-indigo-400" />;
+      case 'admin':
+      default:
+        return <Shield className="w-3.5 h-3.5 text-purple-400" />;
+    }
+  };
+
+  const getRoleLabel = (role?: string) => {
+    switch (role) {
+      case 'accountant':
+        return t.roleAccountant;
+      case 'lawyer':
+        return t.roleLawyer;
+      case 'admin':
+      default:
+        return t.roleAdmin;
+    }
+  };
+
   return (
-    <header className="bg-slate-900 border-b border-slate-800 text-white sticky top-0 z-40 shadow-lg">
+    <header className={`${theme === 'bright' ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-900 border-slate-800 text-white'} border-b sticky top-0 z-40 shadow-sm transition-colors`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Brand & Costa Rica Ministry of Hacienda Badge */}
+          {/* Brand & Costa Rica Ministry of Finance Emblem */}
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 via-indigo-600 to-emerald-500 p-0.5 flex items-center justify-center shadow-md">
-              <div className="w-full h-full bg-slate-900 rounded-[7px] flex items-center justify-center font-bold text-emerald-400 text-lg tracking-wider">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 via-indigo-600 to-emerald-500 p-0.5 flex items-center justify-center shadow-md shrink-0">
+              <div className={`w-full h-full ${theme === 'bright' ? 'bg-white text-emerald-600' : 'bg-slate-900 text-emerald-400'} rounded-[7px] flex items-center justify-center font-bold text-base tracking-wider`}>
                 CR
               </div>
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-bold text-base sm:text-lg tracking-tight text-slate-100">
-                  Factura Electrónica CR
+                <span className={`font-bold text-base sm:text-lg tracking-tight ${theme === 'bright' ? 'text-slate-900' : 'text-slate-100'}`}>
+                  {t.appTitle}
                 </span>
-                <span className="text-xs px-2 py-0.5 font-mono font-medium rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  v4.3 DGT
+                <span className="text-[10px] px-2 py-0.5 font-mono font-medium rounded bg-emerald-500/15 text-emerald-500 border border-emerald-500/30">
+                  {t.versionBadge}
                 </span>
               </div>
-              <p className="text-xs text-slate-400 hidden sm:block">
-                Ministerio de Hacienda · Sistema Oficial de Emisión y Recepción
+              <p className={`text-xs ${theme === 'bright' ? 'text-slate-500' : 'text-slate-400'} hidden sm:block`}>
+                {t.appSubtitle}
               </p>
             </div>
           </div>
 
-          {/* Sandbox & Vault Status Badges */}
-          <div className="hidden md:flex items-center space-x-3">
-            {/* Environment Badge */}
-            <div
-              onClick={onOpenSettings}
-              className={`cursor-pointer px-3 py-1 rounded-full text-xs font-medium flex items-center space-x-1.5 border transition-all ${
-                taxpayer?.useLiveSandbox
-                  ? 'bg-amber-500/15 border-amber-500/30 text-amber-300 hover:bg-amber-500/25'
-                  : 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25'
+          {/* Active Company Selector Dropdown */}
+          <div className="relative hidden md:block">
+            <button
+              onClick={() => setShowCompanyMenu(!showCompanyMenu)}
+              className={`px-3 py-1.5 rounded-lg border text-xs font-medium flex items-center space-x-2 transition-colors ${
+                theme === 'bright'
+                  ? 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200/70'
+                  : 'bg-slate-800/80 border-slate-700 text-slate-200 hover:bg-slate-800'
               }`}
             >
-              <span className={`w-2 h-2 rounded-full animate-pulse ${taxpayer?.useLiveSandbox ? 'bg-amber-400' : 'bg-emerald-400'}`} />
-              <span>
-                {taxpayer?.useLiveSandbox ? 'Sandbox ATV En Vivo (stag)' : 'Sandbox Simulador Inteligente'}
-              </span>
-            </div>
+              <Building className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+              <div className="text-left">
+                <span className="text-[10px] text-slate-400 block font-normal leading-none">{t.currentCompany}</span>
+                <span className="font-semibold truncate max-w-[170px] block leading-tight">{company?.nombre || 'Seleccionar Empresa'}</span>
+              </div>
+              <ChevronDown className="w-3 h-3 text-slate-400 ml-1" />
+            </button>
 
-            {/* Cryptographic Vault Status */}
-            <div
-              onClick={onOpenSettings}
-              title="Bóveda Criptográfica AES-256-GCM para llaves criptográficas .p12 y contraseñas ATV"
-              className="cursor-pointer px-2.5 py-1 rounded-full text-xs font-mono bg-slate-800/80 border border-slate-700 text-slate-300 flex items-center space-x-1.5 hover:border-slate-600 transition-colors"
-            >
-              <Key className="w-3.5 h-3.5 text-blue-400" />
-              <span>XAdES-EPES PKCS#12</span>
-            </div>
-
-            <div
-              title="Seguridad de datos cifrada en reposo y en tránsito"
-              className="px-2.5 py-1 rounded-full text-xs font-mono bg-slate-800/80 border border-slate-700 text-emerald-400 flex items-center space-x-1.5"
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>AES-256-GCM</span>
-            </div>
+            {showCompanyMenu && (
+              <div className={`absolute left-0 mt-2 w-72 rounded-xl shadow-2xl border z-50 overflow-hidden ${
+                theme === 'bright' ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-900 border-slate-700 text-slate-100'
+              }`}>
+                <div className={`p-2.5 border-b text-[11px] font-semibold uppercase tracking-wider flex justify-between items-center ${
+                  theme === 'bright' ? 'bg-slate-50 border-slate-200 text-slate-500' : 'bg-slate-800/80 border-slate-700 text-slate-400'
+                }`}>
+                  <span>{t.switchCompany}</span>
+                  <button
+                    onClick={() => {
+                      setShowCompanyMenu(false);
+                      onOpenNewCompany();
+                    }}
+                    className="text-emerald-500 hover:text-emerald-600 flex items-center space-x-1"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>{lang === 'en' ? 'New' : 'Nueva'}</span>
+                  </button>
+                </div>
+                <div className="max-h-60 overflow-y-auto divide-y divide-slate-800">
+                  {companies.map((c) => (
+                    <div
+                      key={c.id}
+                      onClick={() => {
+                        onSelectCompany(c.id);
+                        setShowCompanyMenu(false);
+                      }}
+                      className={`p-2.5 text-xs cursor-pointer transition-colors ${
+                        c.id === company?.id
+                          ? (theme === 'bright' ? 'bg-emerald-50 text-emerald-800 font-semibold' : 'bg-emerald-500/10 text-emerald-300 font-semibold')
+                          : (theme === 'bright' ? 'hover:bg-slate-50 text-slate-700' : 'hover:bg-slate-800/60 text-slate-300')
+                      }`}
+                    >
+                      <div className="truncate">{c.nombre}</div>
+                      <span className="text-[10px] text-slate-400 font-mono">Cédula: {c.cedula}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Action Buttons */}
+          {/* Right Action Tools: Language, Theme, User Pill, Notifications */}
           <div className="flex items-center space-x-2">
-            {/* Quick Test Scenarios */}
+            {/* Language Switcher */}
             <button
-              onClick={onOpenTestScenarios}
-              className="px-3 py-1.5 text-xs font-medium bg-indigo-600/30 text-indigo-200 border border-indigo-500/30 rounded-lg hover:bg-indigo-600/50 transition-colors flex items-center space-x-1.5"
-              title="Probar escenarios tributarios (13%, 4% Salud, 8% Turismo, Exportación, Reintentos 503)"
+              onClick={onToggleLang}
+              className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center space-x-1.5 transition-colors ${
+                theme === 'bright'
+                  ? 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200/70'
+                  : 'bg-slate-800/80 border-slate-700 text-slate-200 hover:bg-slate-800'
+              }`}
+              title="Switch language between English and Spanish"
             >
-              <HelpCircle className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Escenarios Sandbox</span>
+              <Globe className="w-3.5 h-3.5 text-blue-500" />
+              <span>{lang === 'es' ? 'EN' : 'ES'}</span>
             </button>
 
-            {/* Reports D-104 */}
+            {/* Bright / Dark Theme Switcher */}
             <button
-              onClick={onOpenReports}
-              className="px-3 py-1.5 text-xs font-medium bg-slate-800 text-slate-200 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors flex items-center space-x-1.5"
-              title="Ver reporte fiscal de IVA Débito vs Crédito (D-104)"
+              onClick={onToggleTheme}
+              className={`p-2 rounded-lg border transition-colors ${
+                theme === 'bright'
+                  ? 'bg-slate-100 border-slate-200 text-amber-600 hover:bg-slate-200/70'
+                  : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'
+              }`}
+              title={t.themeToggle}
             >
-              <FileCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="hidden sm:inline">Reporte D-104</span>
+              {theme === 'bright' ? <Moon className="w-4 h-4 text-indigo-600" /> : <Sun className="w-4 h-4 text-amber-400" />}
             </button>
 
-            {/* Config & Certificate */}
+            {/* User Profile Pill */}
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className={`px-2.5 py-1.5 rounded-lg border text-xs flex items-center space-x-1.5 transition-colors ${
+                  theme === 'bright'
+                    ? 'bg-slate-100 border-slate-200 text-slate-800 hover:bg-slate-200/70'
+                    : 'bg-slate-800/80 border-slate-700 text-slate-200 hover:bg-slate-800'
+                }`}
+              >
+                {getRoleIcon(user?.role)}
+                <span className="font-semibold hidden lg:inline max-w-[120px] truncate">{user?.name || 'Usuario'}</span>
+                <ChevronDown className="w-3 h-3 text-slate-400" />
+              </button>
+
+              {showUserMenu && (
+                <div className={`absolute right-0 mt-2 w-64 rounded-xl shadow-2xl border z-50 overflow-hidden ${
+                  theme === 'bright' ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-900 border-slate-700 text-slate-100'
+                }`}>
+                  <div className="p-3 border-b border-slate-800">
+                    <span className="text-xs font-bold block truncate">{user?.name}</span>
+                    <span className="text-[11px] text-slate-400 block truncate">{user?.email}</span>
+                    <span className="mt-1.5 inline-block text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                      {getRoleLabel(user?.role)}
+                    </span>
+                    {user?.licenseNumber && (
+                      <span className="text-[10px] font-mono text-slate-500 block mt-1">
+                        {user.licenseNumber}
+                      </span>
+                    )}
+                  </div>
+                  <div className="p-2 space-y-1">
+                    <button
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        onOpenAuth();
+                      }}
+                      className="w-full text-left px-3 py-1.5 text-xs rounded hover:bg-slate-800/50 flex items-center space-x-2"
+                    >
+                      <UserIcon className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{lang === 'en' ? 'Switch User / Sign In' : 'Cambiar Usuario / Entrar'}</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        onSignOut();
+                      }}
+                      className="w-full text-left px-3 py-1.5 text-xs rounded hover:bg-rose-500/10 text-rose-400 flex items-center space-x-2"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>{t.signOut}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Settings & Credentials */}
             <button
               onClick={onOpenSettings}
-              className="p-2 text-slate-300 hover:text-white bg-slate-800/70 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors"
-              title="Configuración de contribuyente y credenciales de Hacienda"
+              className={`p-2 rounded-lg border transition-colors ${
+                theme === 'bright'
+                  ? 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
+                  : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'
+              }`}
+              title="Configuración de Hacienda y Certificado .p12"
             >
               <Sliders className="w-4 h-4" />
-            </button>
-
-            {/* Refresh */}
-            <button
-              onClick={onRefreshAll}
-              disabled={isRefreshing}
-              className="p-2 text-slate-300 hover:text-white bg-slate-800/70 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors disabled:opacity-50"
-              title="Sincronizar y actualizar estado"
-            >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-emerald-400' : ''}`} />
             </button>
 
             {/* Notification Bell */}
             <div className="relative">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="relative p-2 text-slate-300 hover:text-white bg-slate-800/70 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors"
-                title="Notificaciones en tiempo real"
+                className={`relative p-2 rounded-lg border transition-colors ${
+                  theme === 'bright'
+                    ? 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
+                    : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'
+                }`}
+                title="Notificaciones"
               >
                 <Bell className="w-4 h-4" />
                 {unreadCount > 0 && (
@@ -166,45 +308,35 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
               </button>
 
-              {/* Notification Drawer */}
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden text-slate-100">
-                  <div className="p-3 bg-slate-800/80 border-b border-slate-700 flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Bell className="w-4 h-4 text-emerald-400" />
-                      <span className="text-xs font-semibold uppercase tracking-wider text-slate-200">
-                        Alertas y Notificaciones ({notifications.length})
-                      </span>
-                    </div>
+                <div className={`absolute right-0 mt-2 w-80 sm:w-96 rounded-xl shadow-2xl border z-50 overflow-hidden ${
+                  theme === 'bright' ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-900 border-slate-700 text-slate-100'
+                }`}>
+                  <div className={`p-3 border-b flex items-center justify-between ${
+                    theme === 'bright' ? 'bg-slate-50 border-slate-200' : 'bg-slate-800/80 border-slate-700'
+                  }`}>
+                    <span className="text-xs font-semibold uppercase tracking-wider">
+                      Notificaciones ({notifications.length})
+                    </span>
                     {notifications.length > 0 && (
-                      <button
-                        onClick={onClearNotifications}
-                        className="text-xs text-slate-400 hover:text-rose-400 flex items-center space-x-1"
-                        title="Limpiar todas"
-                      >
+                      <button onClick={onClearNotifications} className="text-xs text-slate-400 hover:text-rose-400 flex items-center space-x-1">
                         <Trash2 className="w-3.5 h-3.5" />
                         <span>Limpiar</span>
                       </button>
                     )}
                   </div>
-
                   <div className="max-h-80 overflow-y-auto divide-y divide-slate-800">
                     {notifications.length === 0 ? (
                       <div className="p-6 text-center text-xs text-slate-500">
-                        No hay notificaciones pendientes. Todos los envíos están sincronizados.
+                        {lang === 'en' ? 'No pending notifications.' : 'No hay notificaciones pendientes.'}
                       </div>
                     ) : (
                       notifications.map((item) => (
-                        <div
-                          key={item.id}
-                          className="p-3 hover:bg-slate-800/50 transition-colors text-xs flex items-start space-x-2.5"
-                        >
+                        <div key={item.id} className="p-3 hover:bg-slate-800/40 text-xs flex items-start space-x-2.5">
                           {item.type === 'SUCCESS' && <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />}
                           {item.type === 'ERROR' && <XCircle className="w-4 h-4 text-rose-400 mt-0.5 shrink-0" />}
-                          {item.type === 'WARNING' && <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />}
-                          {item.type === 'INFO' && <HelpCircle className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />}
                           <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-slate-200">{item.title}</div>
+                            <div className="font-semibold">{item.title}</div>
                             <p className="text-slate-400 text-[11px] mt-0.5 line-clamp-2">{item.message}</p>
                             <span className="text-[10px] text-slate-500 mt-1 block">
                               {new Date(item.timestamp).toLocaleTimeString('es-CR')}
