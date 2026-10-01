@@ -135,6 +135,19 @@ export async function updateTaxpayerConfig(
 }
 
 /**
+ * Switches the active tax schema version between v4.3 and v4.4.
+ */
+export async function updateSchemaVersion(schemaVersion: '4.3' | '4.4'): Promise<{ success: boolean; schemaVersion: '4.3' | '4.4'; company: Company }> {
+  const res = await fetch('/api/config/schema-version', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ schemaVersion }),
+  });
+  if (!res.ok) throw new Error('Error al actualizar la versión de esquema.');
+  return res.json();
+}
+
+/**
  * Lists electronic documents.
  */
 export async function fetchDocuments(companyId?: string, estado?: string, tipo?: string): Promise<ElectronicDocument[]> {

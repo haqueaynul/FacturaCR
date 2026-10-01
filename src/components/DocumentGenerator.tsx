@@ -149,6 +149,7 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = ({
 
     const payload = {
       tipoDocumento,
+      schemaVersion: company?.schemaVersion || '4.4',
       moneda,
       tipoCambio: moneda === 'USD' ? tipoCambio : 1.0,
       condicionVenta,
@@ -185,9 +186,18 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = ({
             <FilePlus className="w-5 h-5" />
           </div>
           <div>
-            <h2 className={`text-base font-bold tracking-tight ${isBright ? 'text-slate-900' : 'text-white'}`}>
-              {t.formNewDocTitle}
-            </h2>
+            <div className="flex items-center space-x-2">
+              <h2 className={`text-base font-bold tracking-tight ${isBright ? 'text-slate-900' : 'text-white'}`}>
+                {t.formNewDocTitle}
+              </h2>
+              <span className={`text-[10px] px-2 py-0.5 font-mono font-bold rounded border ${
+                (company?.schemaVersion || '4.4') === '4.4'
+                  ? 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30'
+                  : 'bg-blue-500/15 text-blue-500 border-blue-500/30'
+              }`}>
+                XML v{company?.schemaVersion || '4.4'}
+              </span>
+            </div>
             <p className="text-xs text-slate-400">
               {company?.nombre} · Sucursal {company?.sucursal} · Punto {company?.puntoVenta}
             </p>
@@ -234,6 +244,9 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = ({
               <option value="02">02 - {lang === 'en' ? 'Debit Note (ND)' : 'Nota de Débito (ND)'}</option>
               <option value="08">08 - {lang === 'en' ? 'Purchase Invoice (FEC)' : 'Factura de Compra (FEC)'}</option>
               <option value="09">09 - {lang === 'en' ? 'Export Invoice (FEE)' : 'Factura de Exportación (FEE)'}</option>
+              {(company?.schemaVersion || '4.4') === '4.4' && (
+                <option value="10">10 - {lang === 'en' ? 'Payment Receipt (REP - v4.4)' : 'Recibo Electrónico de Pago (REP - v4.4)'}</option>
+              )}
             </select>
           </div>
 
@@ -311,7 +324,10 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = ({
                 isBright ? 'bg-slate-50 border-slate-300 text-slate-800' : 'bg-slate-800 border-slate-700 text-white'
               }`}
             >
-              <option value="04">04 - {lang === 'en' ? 'Bank Transfer / SINPE' : 'Transferencia / SINPE Móvil'}</option>
+              {(company?.schemaVersion || '4.4') === '4.4' && (
+                <option value="05">05 - {lang === 'en' ? 'SINPE Móvil (Official v4.4)' : 'SINPE Móvil (Oficial v4.4)'}</option>
+              )}
+              <option value="04">04 - {lang === 'en' ? 'Bank Transfer' : 'Transferencia Bancaria'}</option>
               <option value="02">02 - {lang === 'en' ? 'Credit / Debit Card' : 'Tarjeta Crédito / Débito'}</option>
               <option value="01">01 - {lang === 'en' ? 'Cash' : 'Efectivo'}</option>
               <option value="03">03 - {lang === 'en' ? 'Check' : 'Cheque'}</option>

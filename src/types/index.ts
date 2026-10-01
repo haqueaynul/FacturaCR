@@ -4,7 +4,9 @@
  * multi-user roles (Accountants, Lawyers, Admins), multi-company management, and compliance reports.
  */
 
-export type DocumentType = '01' | '02' | '03' | '04' | '08' | '09';
+export type DocumentType = '01' | '02' | '03' | '04' | '08' | '09' | '10'; // 10: REP (Recibo Electrónico de Pago v4.4)
+
+export type SchemaVersion = '4.3' | '4.4';
 
 export type DocumentStatus =
   | 'borrador'
@@ -46,6 +48,7 @@ export interface Company {
   hasP12Certificate?: boolean;
   hasPin?: boolean;
   useLiveSandbox: boolean;
+  schemaVersion?: SchemaVersion; // '4.3' or '4.4'
   // Legal & Audit Status
   p12Status: 'valid' | 'expiring' | 'expired';
   p12ExpiryDate: string;
@@ -69,6 +72,7 @@ export interface DocumentItem {
   naturalezaDescuento?: string;
   tarifaIva: number;
   codigoTarifaIva: string;
+  naturalezaTributaria?: 'gravado' | 'exento' | 'no_sujeto';
   montoIva: number;
   montoTotalLinea: number;
 }
@@ -76,6 +80,7 @@ export interface DocumentItem {
 export interface ElectronicDocument {
   id: string;
   companyId?: string;
+  schemaVersion?: SchemaVersion;
   clave: string;
   consecutivo: string;
   tipoDocumento: DocumentType;

@@ -60,6 +60,7 @@ export interface Company {
   pinP12?: string;
   p12CertificateBase64?: string;
   useLiveSandbox: boolean;
+  schemaVersion?: '4.3' | '4.4';
   p12Status: 'valid' | 'expiring' | 'expired';
   p12ExpiryDate: string;
   personeriaStatus: 'vigente' | 'tramite';
@@ -82,6 +83,7 @@ export interface DocumentItem {
   naturalezaDescuento?: string;
   tarifaIva: number;
   codigoTarifaIva: string;
+  naturalezaTributaria?: 'gravado' | 'exento' | 'no_sujeto';
   montoIva: number;
   montoTotalLinea: number;
 }
@@ -89,16 +91,17 @@ export interface DocumentItem {
 export interface ElectronicDocument {
   id: string;
   companyId: string;
+  schemaVersion?: '4.3' | '4.4';
   clave: string;
   consecutivo: string;
-  tipoDocumento: '01' | '02' | '03' | '04' | '08' | '09';
+  tipoDocumento: '01' | '02' | '03' | '04' | '08' | '09' | '10';
   fechaEmision: string;
   codigoActividad: string;
   moneda: 'CRC' | 'USD';
   tipoCambio: number;
   condicionVenta: '01' | '02' | '03';
   plazoCredito?: number;
-  medioPago: '01' | '02' | '03' | '04';
+  medioPago: '01' | '02' | '03' | '04' | '05'; // 05: SINPE Móvil (v4.4)
   emisor: {
     nombre: string;
     tipoIdentificacion: string;
@@ -249,6 +252,7 @@ let companies: Company[] = [
     atvPassword: 'SandboxTestPassword123#',
     pinP12: '1234',
     useLiveSandbox: false,
+    schemaVersion: '4.4',
     p12Status: 'valid',
     p12ExpiryDate: '2027-11-15',
     personeriaStatus: 'vigente',
@@ -273,6 +277,7 @@ let companies: Company[] = [
     atvPassword: 'SandboxTestPassword123#',
     pinP12: '1234',
     useLiveSandbox: false,
+    schemaVersion: '4.4',
     p12Status: 'valid',
     p12ExpiryDate: '2027-08-20',
     personeriaStatus: 'vigente',
@@ -445,7 +450,7 @@ function escapeXml(str: string): string {
 }
 
 /**
- * Builds standard XML for Factura Electrónica v4.3 adhering strictly to Hacienda's schema.
+ * Builds standard XML for Factura Electrónica v4.3 or v4.4 adhering strictly to Hacienda's schema.
  */
 export function buildFacturaXml(doc: ElectronicDocument): string {
   const rootTag =
@@ -453,13 +458,14 @@ export function buildFacturaXml(doc: ElectronicDocument): string {
     doc.tipoDocumento === '02' ? 'NotaDebitoElectronica' :
     doc.tipoDocumento === '03' ? 'NotaCreditoElectronica' :
     doc.tipoDocumento === '04' ? 'TiqueteElectronico' :
-    doc.tipoDocumento === '08' ? 'FacturaElectronicaCompra' : 'FacturaElectronicaExportacion';
+    doc.tipoDocumento === '08' ? 'FacturaElectronicaCompra' :
+    doc.tipoDocumento === '10' ? 'ReciboElectronicoPago' : 'FacturaElectronicaExportacion';
 
-  const schemaVersion = '4.3';
+  const schemaVersion = doc.schemaVersion || '4.4';
   const xmlNamespace = `https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v${schemaVersion}/${rootTag.toLowerCase()}`;
 
   let xml = `<?xml version="1.0" encoding="utf-8"?>\n`;
-  xml += `<${rootTag} xmlns="${xmlNamespace}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">\n`;
+  xml += `<${rootTag} xmlns="${xmlNamespace}" version="${schemaVersion}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">\n`;
   xml += `  <Clave>${doc.clave}</Clave>\n`;
   xml += `  <CodigoActividad>${doc.codigoActividad}</CodigoActividad>\n`;
   xml += `  <NumeroConsecutivo>${doc.consecutivo}</NumeroConsecutivo>\n`;
@@ -1087,9 +1093,30 @@ app.post('/api/config', (req: Request, res: Response) => {
     step: 'SECURITY',
     status: 'INFO',
     companyId: company.id,
-    message: `Configuración tributaria actualizada para ${company.nombre}.`,
+    message: `Configuración tributaria actualizada para ${company.nombre} (Esquema v${company.schemaVersion || '4.4'}).`,
   });
-  res.json({ success: true, message: 'Configuración actualizada.' });
+  res.json({ success: true, message: 'Configuración actualizada.', company });
+});
+
+app.post('/api/config/schema-version', (req: Request, res: Response) => {
+  const company = getActiveCompany();
+  const { schemaVersion } = req.body;
+  if (schemaVersion === '4.3' || schemaVersion === '4.4') {
+    company.schemaVersion = schemaVersion;
+    recordAuditLog({
+      step: 'SECURITY',
+      status: 'INFO',
+      companyId: company.id,
+      message: `Versión tributaria de Hacienda cambiada a v${schemaVersion} para ${company.nombre}.`,
+    });
+    recordNotification({
+      type: 'INFO',
+      title: 'Versión de Esquema Actualizada',
+      message: `La empresa ${company.nombre} ahora opera bajo la especificación v${schemaVersion} del Ministerio de Hacienda.`,
+    });
+    return res.json({ success: true, schemaVersion, company });
+  }
+  res.status(400).json({ error: 'Versión inválida. Utilice 4.3 o 4.4.' });
 });
 
 // ELECTRONIC DOCUMENTS
@@ -1191,6 +1218,7 @@ app.post('/api/documents', (req: Request, res: Response) => {
     const newDoc: ElectronicDocument = {
       id: 'DOC-' + crypto.randomUUID().slice(0, 8),
       companyId: company.id,
+      schemaVersion: req.body.schemaVersion || company.schemaVersion || '4.4',
       clave,
       consecutivo,
       tipoDocumento,
@@ -1660,6 +1688,30 @@ app.post('/api/sandbox/preset-scenario', async (req: Request, res: Response) => 
           tipoDocumento: '01',
           receptor: { nombre: 'TEST CLIENTE REINTENTO 503', tipoIdentificacion: '01', numeroIdentificacion: '110000444', correo: 'test@retry.cr' },
           items: [{ numeroLinea: 1, codigoCabys: '8314100000000', detalle: 'Prueba de falla transitoria con reintento automático [TEST_NETWORK_503]', cantidad: 1, unidadMedida: 'Sp', precioUnitario: 35000, tarifaIva: 13, codigoTarifaIva: '08' }],
+        };
+        break;
+      case 'v44_rep_payment':
+        scenarioDoc = {
+          tipoDocumento: '10', // Recibo Electronico de Pago (v4.4)
+          schemaVersion: '4.4',
+          medioPago: '05', // SINPE Móvil
+          receptor: {
+            nombre: 'CONTRATISTA Y ASOCIADOS DEL ESTE S.A.',
+            tipoIdentificacion: '02',
+            numeroIdentificacion: '3101666777',
+            correo: 'pagos@contratistacr.com',
+          },
+          items: [{
+            numeroLinea: 1,
+            codigoCabys: '8314100000000',
+            detalle: 'Recibo Electrónico de Pago (REP v4.4) - Liquidación de factura a crédito vía SINPE Móvil',
+            cantidad: 1,
+            unidadMedida: 'Sp',
+            precioUnitario: 95000,
+            tarifaIva: 13,
+            codigoTarifaIva: '08',
+            naturalezaTributaria: 'gravado',
+          }],
         };
         break;
       default:

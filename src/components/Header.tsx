@@ -30,7 +30,7 @@ import {
   Shield,
 } from 'lucide-react';
 import { Language, translations } from '../i18n';
-import { Company, NotificationItem, User } from '../types';
+import { Company, NotificationItem, User, SchemaVersion } from '../types';
 
 interface HeaderProps {
   lang: Language;
@@ -39,6 +39,9 @@ interface HeaderProps {
   companies: Company[];
   user: User | null;
   notifications: NotificationItem[];
+  activeVersion: SchemaVersion;
+  onSwitchVersion: (version: SchemaVersion) => void;
+  onOpenVersionModal: () => void;
   onToggleTheme: () => void;
   onToggleLang: () => void;
   onSelectCompany: (companyId: string) => void;
@@ -60,6 +63,9 @@ export const Header: React.FC<HeaderProps> = ({
   companies,
   user,
   notifications,
+  activeVersion,
+  onSwitchVersion,
+  onOpenVersionModal,
   onToggleTheme,
   onToggleLang,
   onSelectCompany,
@@ -120,9 +126,47 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className={`font-bold text-base sm:text-lg tracking-tight ${theme === 'bright' ? 'text-slate-900' : 'text-slate-100'}`}>
                   {t.appTitle}
                 </span>
-                <span className="text-[10px] px-2 py-0.5 font-mono font-medium rounded bg-emerald-500/15 text-emerald-500 border border-emerald-500/30">
-                  {t.versionBadge}
-                </span>
+
+                {/* Interactive v4.3 vs v4.4 Switcher */}
+                <div className={`flex items-center rounded-lg p-0.5 border text-[11px] font-mono ${
+                  theme === 'bright' ? 'bg-slate-100 border-slate-300' : 'bg-slate-800/90 border-slate-700'
+                }`}>
+                  <button
+                    onClick={() => onSwitchVersion('4.3')}
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                      activeVersion === '4.3'
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : theme === 'bright' ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'
+                    }`}
+                    title={lang === 'en' ? 'Switch to Schema v4.3 (Legacy DGT-R-033-2019)' : 'Cambiar a Esquema v4.3 (Anterior DGT-R-033-2019)'}
+                  >
+                    v4.3
+                  </button>
+                  <button
+                    onClick={() => onSwitchVersion('4.4')}
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                      activeVersion === '4.4'
+                        ? 'bg-emerald-600 text-white shadow-xs'
+                        : theme === 'bright' ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'
+                    }`}
+                    title={lang === 'en' ? 'Switch to Schema v4.4 (TRIBU-CR / REP / SINPE)' : 'Cambiar a Esquema v4.4 (TRIBU-CR / REP / SINPE)'}
+                  >
+                    v4.4
+                  </button>
+                </div>
+
+                <button
+                  onClick={onOpenVersionModal}
+                  className={`p-1 px-1.5 rounded-md text-[10px] font-medium border flex items-center space-x-1 transition-colors cursor-pointer ${
+                    theme === 'bright'
+                      ? 'bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100'
+                      : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white'
+                  }`}
+                  title={t.compareVersionsBtn}
+                >
+                  <HelpCircle className="w-3 h-3 text-emerald-500" />
+                  <span className="hidden lg:inline">{t.compareVersionsBtn}</span>
+                </button>
               </div>
               <p className={`text-xs ${theme === 'bright' ? 'text-slate-500' : 'text-slate-400'} hidden sm:block`}>
                 {t.appSubtitle}

@@ -33,6 +33,7 @@ import { SandboxSettingsModal } from './components/SandboxSettingsModal';
 import { ScheduledReportsModal } from './components/ScheduledReportsModal';
 import { CompanyModal } from './components/CompanyModal';
 import { AuthModal } from './components/AuthModal';
+import { VersionComparisonModal } from './components/VersionComparisonModal';
 
 import {
   ElectronicDocument,
@@ -42,6 +43,7 @@ import {
   NotificationItem,
   TaxReportSummary,
   User,
+  SchemaVersion,
 } from './types';
 
 import {
@@ -54,6 +56,7 @@ import {
   activateCompany,
   fetchTaxpayerConfig,
   updateTaxpayerConfig,
+  updateSchemaVersion,
   fetchDocuments,
   createDocument,
   submitDocument,
@@ -94,6 +97,8 @@ export default function App() {
   const [isReportsOpen, setIsReportsOpen] = useState(false);
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
+  const [isSwitchingVersion, setIsSwitchingVersion] = useState(false);
 
   // Next-Step Guide Banner
   const [isGuideDismissed, setIsGuideDismissed] = useState(false);
@@ -323,6 +328,22 @@ export default function App() {
 
   const isBright = theme === 'bright';
   const latestDoc = documents[0];
+  const activeVersion: SchemaVersion = company?.schemaVersion || '4.4';
+
+  const handleSwitchVersion = async (targetVersion: SchemaVersion) => {
+    try {
+      setIsSwitchingVersion(true);
+      const res = await updateSchemaVersion(targetVersion);
+      setCompany(res.company);
+      showToast(`${t.switchSuccessToast} v${targetVersion}`);
+      await loadAllData();
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      alert(errorMsg);
+    } finally {
+      setIsSwitchingVersion(false);
+    }
+  };
 
   return (
     <div className={`min-h-screen flex flex-col font-sans transition-colors ${
@@ -336,6 +357,9 @@ export default function App() {
         companies={companies}
         user={user}
         notifications={notifications}
+        activeVersion={activeVersion}
+        onSwitchVersion={handleSwitchVersion}
+        onOpenVersionModal={() => setIsVersionModalOpen(true)}
         onToggleTheme={() => setTheme(theme === 'dark' ? 'bright' : 'dark')}
         onToggleLang={() => setLang(lang === 'es' ? 'en' : 'es')}
         onSelectCompany={handleSelectCompany}
@@ -618,6 +642,17 @@ export default function App() {
           onSignOut={handleSignOut}
           onClose={() => setIsAuthModalOpen(false)}
           isSubmitting={isAuthSubmitting}
+        />
+      )}
+
+      {isVersionModalOpen && (
+        <VersionComparisonModal
+          lang={lang}
+          theme={theme}
+          activeVersion={activeVersion}
+          onSwitchVersion={handleSwitchVersion}
+          onClose={() => setIsVersionModalOpen(false)}
+          isSwitching={isSwitchingVersion}
         />
       )}
 

@@ -12,6 +12,13 @@ export interface Translations {
   appTitle: string;
   appSubtitle: string;
   versionBadge: string;
+  versionSwitcherLabel: string;
+  compareVersionsBtn: string;
+  version43Label: string;
+  version44Label: string;
+  versionModalTitle: string;
+  versionModalSubtitle: string;
+  switchSuccessToast: string;
   sandboxMode: string;
   sandboxLive: string;
   sandboxSim: string;
@@ -219,8 +226,15 @@ export const translations: Record<Language, Translations> = {
   en: {
     // Brand & Header
     appTitle: 'Costa Rica e-Invoice Hub',
-    appSubtitle: 'Ministry of Finance · Official v4.3 Issuance & Reception System',
-    versionBadge: 'v4.3 Tax Authority',
+    appSubtitle: 'Ministry of Finance · Official v4.3 / v4.4 Invoicing & Reception System',
+    versionBadge: 'Tax Authority',
+    versionSwitcherLabel: 'Schema Version',
+    compareVersionsBtn: 'Compare v4.3 vs v4.4',
+    version43Label: 'v4.3 Legacy (DGT-R-033-2019)',
+    version44Label: 'v4.4 Latest (TRIBU-CR / REP)',
+    versionModalTitle: 'Costa Rica Factura Electrónica: v4.3 vs v4.4 Specification Comparison',
+    versionModalSubtitle: 'Technical and regulatory guide by Ministerio de Hacienda & Dirección General de Tributación',
+    switchSuccessToast: 'Successfully switched active tax schema version to',
     sandboxMode: 'Sandbox Mode',
     sandboxLive: 'Live ATV Sandbox (stag)',
     sandboxSim: 'Smart Sandbox Simulator',
@@ -426,8 +440,15 @@ export const translations: Record<Language, Translations> = {
   es: {
     // Brand & Header
     appTitle: 'Factura Electrónica CR',
-    appSubtitle: 'Ministerio de Hacienda · Sistema Oficial de Emisión y Recepción v4.3',
-    versionBadge: 'v4.3 DGT',
+    appSubtitle: 'Ministerio de Hacienda · Sistema Oficial de Emisión y Recepción v4.3 / v4.4',
+    versionBadge: 'DGT Hacienda',
+    versionSwitcherLabel: 'Versión Esquema',
+    compareVersionsBtn: 'Comparar v4.3 vs v4.4',
+    version43Label: 'v4.3 Previo (DGT-R-033-2019)',
+    version44Label: 'v4.4 Vigente (TRIBU-CR / REP)',
+    versionModalTitle: 'Factura Electrónica Costa Rica: Comparativa de Especificación v4.3 vs v4.4',
+    versionModalSubtitle: 'Guía técnica y normativa del Ministerio de Hacienda & Dirección General de Tributación',
+    switchSuccessToast: 'Versión de esquema tributario cambiada exitosamente a',
     sandboxMode: 'Modo Sandbox',
     sandboxLive: 'Sandbox ATV En Vivo (stag)',
     sandboxSim: 'Sandbox Simulador Inteligente',

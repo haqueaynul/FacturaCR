@@ -58,6 +58,7 @@ export const SandboxSettingsModal: React.FC<SandboxSettingsModalProps> = ({
   const [p12FileName, setP12FileName] = useState<string | null>(null);
   const [p12Base64, setP12Base64] = useState<string | null>(null);
   const [useLiveSandbox, setUseLiveSandbox] = useState<boolean>(taxpayer?.useLiveSandbox || false);
+  const [schemaVersion, setSchemaVersion] = useState<'4.3' | '4.4'>(taxpayer?.schemaVersion || '4.4');
 
   /**
    * Handles user file upload for .p12 cryptographic certificate.
@@ -93,6 +94,7 @@ export const SandboxSettingsModal: React.FC<SandboxSettingsModalProps> = ({
       puntoVenta,
       atvUsername,
       useLiveSandbox,
+      schemaVersion,
     };
     if (atvPassword) payload.atvPassword = atvPassword;
     if (pinP12) payload.pinP12 = pinP12;
@@ -171,6 +173,48 @@ export const SandboxSettingsModal: React.FC<SandboxSettingsModalProps> = ({
         <div className="p-5 overflow-y-auto flex-1 font-sans text-xs">
           {activeTab === 'hacienda' && (
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Version Selector: v4.3 vs v4.4 */}
+              <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-300 block mb-2">
+                  Versión de Factura Electrónica (Ministerio de Hacienda)
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div
+                    onClick={() => setSchemaVersion('4.4')}
+                    className={`cursor-pointer p-3 rounded-lg border transition-all ${
+                      schemaVersion === '4.4'
+                        ? 'bg-emerald-500/10 border-emerald-500/50 text-white'
+                        : 'bg-slate-800/40 border-slate-700 text-slate-400 hover:border-slate-600'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-emerald-400">Versión 4.4 (TRIBU-CR / Vigente)</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Recomendado</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 mt-1">
+                      Esquemas XML v4.4, Recibo Electrónico de Pago (REP), soporte dedicado para SINPE Móvil, y desglose de "No Sujeto" vs "Exento".
+                    </p>
+                  </div>
+
+                  <div
+                    onClick={() => setSchemaVersion('4.3')}
+                    className={`cursor-pointer p-3 rounded-lg border transition-all ${
+                      schemaVersion === '4.3'
+                        ? 'bg-blue-500/10 border-blue-500/50 text-white'
+                        : 'bg-slate-800/40 border-slate-700 text-slate-400 hover:border-slate-600'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-blue-400">Versión 4.3 (Estándar Previo / ATV)</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-400">Legacy</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 mt-1">
+                      Esquemas XML v4.3 (Resolución DGT-R-033-2019), Factura tradicional, Notas de Crédito/Débito y Tiquetes sin REP.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {/* Sandbox Mode Selector */}
               <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-300 block mb-2">
