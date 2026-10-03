@@ -88,9 +88,9 @@ export interface ElectronicDocument {
   codigoActividad: string;
   moneda: 'CRC' | 'USD';
   tipoCambio: number;
-  condicionVenta: '01' | '02' | '03';
+  condicionVenta: '01' | '02' | '03' | '99';
   plazoCredito?: number;
-  medioPago: '01' | '02' | '03' | '04';
+  medioPago: '01' | '02' | '03' | '04' | '05' | '99';
   emisor: {
     nombre: string;
     tipoIdentificacion: string;
@@ -135,6 +135,25 @@ export interface ElectronicDocument {
   tiempoRespuestaMs?: number;
 }
 
+export interface SupplierInvoice {
+  id: string;
+  companyId: string;
+  clave: string;
+  consecutivo: string;
+  emisorNombre: string;
+  emisorCedula: string;
+  fechaEmision: string; // ISO string
+  montoTotalImpuesto: number;
+  totalComprobante: number;
+  estadoRecepcion?: 'pendiente' | 'aceptado_05' | 'aceptado_06' | 'rechazado_07' | 'reemplazado_nc';
+  diasHabilesTranscurridos: number;
+  diasRestantesOVencidos: number; // positive = days remaining, negative = days overdue
+  isViolated: boolean;
+  isWarning: boolean;
+  remedyApplied?: 'supplier_reissue' | 'cpa_late_justification' | 'rejection';
+  remedyNote?: string;
+}
+
 export interface ReceptionDocument {
   id: string;
   companyId?: string;
@@ -153,6 +172,9 @@ export interface ReceptionDocument {
   estado: 'firmado' | 'enviado' | 'aceptado' | 'rechazado';
   haciendaMensaje?: string;
   fechaRegistro: string;
+  isDeadlineViolated?: boolean;
+  workingDaysElapsed?: number;
+  remedyApplied?: string;
 }
 
 export interface AuditLogEntry {

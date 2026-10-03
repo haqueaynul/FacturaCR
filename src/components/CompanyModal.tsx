@@ -45,13 +45,15 @@ export const CompanyModal: React.FC<CompanyModalProps> = ({
 
   // Active field explanation tooltip
   const [activeHint, setActiveHint] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nombre.trim() || !cedula.trim() || !correo.trim()) {
-      alert(lang === 'en' ? 'Please complete all required fields.' : 'Por favor completa todos los campos requeridos.');
+      setFormError(lang === 'en' ? 'Please complete all required fields (Name, Tax ID, Email).' : 'Por favor completa todos los campos requeridos (Nombre, Cédula, Correo).');
       return;
     }
+    setFormError(null);
 
     const payload = {
       nombre,
@@ -95,6 +97,14 @@ export const CompanyModal: React.FC<CompanyModalProps> = ({
 
         {/* Body */}
         <form onSubmit={handleSubmit} className="p-5 overflow-y-auto max-h-[80vh] font-sans text-xs space-y-4">
+          {/* Form Error Banner */}
+          {formError && (
+            <div className="p-3 bg-rose-950/50 border border-rose-500/40 rounded-lg text-rose-200 text-xs flex items-center justify-between">
+              <span>{formError}</span>
+              <button type="button" onClick={() => setFormError(null)} className="text-rose-400 hover:text-white font-bold ml-2">✕</button>
+            </div>
+          )}
+
           {/* Active Hint Banner */}
           {activeHint && (
             <div className="p-3 bg-blue-950/40 border border-blue-500/30 rounded-lg text-blue-200 text-xs flex items-start space-x-2">
@@ -192,10 +202,10 @@ export const CompanyModal: React.FC<CompanyModalProps> = ({
                 onChange={(e) => setRegimenTributario(e.target.value as any)}
                 className="w-full bg-slate-800 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none"
               >
-                <option value="tradicional">Régimen Tradicional (General)</option>
-                <option value="simplificado">Régimen de Tributación Simplificada</option>
-                <option value="zona_franca">Régimen de Zona Franca (Exento)</option>
-                <option value="agropecuario">Régimen Agropecuario</option>
+                <option value="tradicional">{t.cfgRegimeTraditional}</option>
+                <option value="simplificado">{t.cfgRegimeSimplified}</option>
+                <option value="zona_franca">{t.cfgRegimeFreeZone}</option>
+                <option value="agropecuario">{t.cfgRegimeAgro}</option>
               </select>
             </div>
           </div>
@@ -231,7 +241,7 @@ export const CompanyModal: React.FC<CompanyModalProps> = ({
 
           <div className="grid grid-cols-2 gap-3 bg-slate-950 p-3 rounded-lg border border-slate-800">
             <div>
-              <label className="block text-slate-400 mb-0.5">Sucursal (3d)</label>
+              <label className="block text-slate-400 mb-0.5">{lang === 'en' ? 'Branch (3 digits)' : 'Sucursal (3d)'}</label>
               <input
                 type="text"
                 maxLength={3}
@@ -241,7 +251,7 @@ export const CompanyModal: React.FC<CompanyModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-slate-400 mb-0.5">Terminal (5d)</label>
+              <label className="block text-slate-400 mb-0.5">{lang === 'en' ? 'Terminal (5 digits)' : 'Terminal (5d)'}</label>
               <input
                 type="text"
                 maxLength={5}

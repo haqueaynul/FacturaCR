@@ -151,6 +151,34 @@ export interface Translations {
   b2bSampleBtn: string;
   b2bHistoryTitle: string;
 
+  // 8-Working-Day Legal Deadline & Remedies
+  deadlineViolationTitle: string;
+  deadlineViolationSubtitle: string;
+  deadlineViolatedBadge: string;
+  deadlineWarningBadge: string;
+  deadlineOnTimeBadge: string;
+  deadlineDaysElapsed: string;
+  deadlineOverdueNotice: string;
+  deadlineDaysPast: string;
+  deadlineDaysRemaining: string;
+  deadlineTaxRisk: string;
+  deadlineRemedyTitle: string;
+  deadlineRemedySubtitle: string;
+  remedySol1Title: string;
+  remedySol1Desc: string;
+  remedySol1Action: string;
+  remedySol1CopyLetter: string;
+  remedySol2Title: string;
+  remedySol2Desc: string;
+  remedySol2Action: string;
+  remedySol3Title: string;
+  remedySol3Desc: string;
+  remedySol3Action: string;
+  incomingInvoicesTitle: string;
+  incomingInvoicesSubtitle: string;
+  btnConfirmReception: string;
+  letterCopiedToast: string;
+
   // Bulk Processing
   bulkTitle: string;
   bulkSubtitle: string;
@@ -230,6 +258,17 @@ export interface Translations {
   // Footer
   footerAuthority: string;
   footerSecurity: string;
+  footerRegulations: string;
+  footerEnvironment: string;
+
+  // Reception Table
+  thSupplier: string;
+  thClave: string;
+  thDate: string;
+  thDeadline8Days: string;
+  thTotal: string;
+  thVat: string;
+  thAction: string;
 
   // Sandbox & Vault Settings Modal
   cfgModalTitle: string;
@@ -441,6 +480,34 @@ export const translations: Record<Language, Translations> = {
     b2bSampleBtn: 'Generate Test Supplier Clave',
     b2bHistoryTitle: 'Received Supplier Invoices History',
 
+    // 8-Working-Day Legal Deadline & Remedies
+    deadlineViolationTitle: '8-Working-Day Legal Deadline Violation (Law 9635 Art. 27)',
+    deadlineViolationSubtitle: 'Costa Rica tax regulations require buyers to submit Mensaje Receptor within 8 working days. Overdue items cannot claim automatic VAT credit without remediation.',
+    deadlineViolatedBadge: 'Legal Deadline Violated',
+    deadlineWarningBadge: 'Expiring Soon (<2 days)',
+    deadlineOnTimeBadge: 'Within Legal Window',
+    deadlineDaysElapsed: 'Working Days Elapsed',
+    deadlineOverdueNotice: 'Past Legal Deadline',
+    deadlineDaysPast: 'days overdue',
+    deadlineDaysRemaining: 'days remaining',
+    deadlineTaxRisk: 'Disqualification of Input VAT Credit (Crédito Fiscal)',
+    deadlineRemedyTitle: 'How to Lean Back to a Solution (Remedios Tributarios Reconocidos)',
+    deadlineRemedySubtitle: 'Three legally established procedures to resolve deadline expiration and protect tax deductions:',
+    remedySol1Title: 'Solution 1: Request Supplier Credit Note & Re-invoice (100% Tax Credit Safe)',
+    remedySol1Desc: 'Standard commercial & tax protocol: Supplier issues Nota de Crédito (03) cancelling the expired invoice and immediately re-issues a new Factura Electrónica (01) with today\'s date. This legally resets the 8-working-day deadline to Day 1 without tax audit risk.',
+    remedySol1Action: 'Simulate Supplier Re-issue (Reset 8-Day Clock)',
+    remedySol1CopyLetter: 'Copy Supplier Annulment Request Letter',
+    remedySol2Title: 'Solution 2: Late Acceptance with CPA Audit Justification (Condition 04 / D-104 Rectification)',
+    remedySol2Desc: 'Submit Mensaje Receptor under Condition 04 (Operational Expense) with supporting purchase orders, bank payment receipts, and delivery notes under Art. 48 of the Tax Code (CNPT) to support corporate income tax deductibility during audits.',
+    remedySol2Action: 'Accept Late with CPA Justification (Condition 04)',
+    remedySol3Title: 'Solution 3: Formal Document Rejection (Mensaje Receptor 07)',
+    remedySol3Desc: 'If the supplier refuses to cooperate or goods were disputed, formally submit Mensaje Receptor 07 (Rechazo Total) to purge the invoice from your active tax liabilities.',
+    remedySol3Action: 'Formally Reject Invoice (Code 07)',
+    incomingInvoicesTitle: 'Supplier Invoices Pending Confirmation (8-Working-Day Window)',
+    incomingInvoicesSubtitle: 'Review incoming vendor billing, monitor statutory deadlines, and take immediate remediation on expired items.',
+    btnConfirmReception: 'Confirm Reception',
+    letterCopiedToast: 'Formal supplier cancellation & re-invoicing letter copied to clipboard!',
+
     // Bulk Processing
     bulkTitle: 'Bulk Invoice Processing Engine',
     bulkSubtitle: 'Generate high-volume batches of invoices, sign concurrently with XAdES-EPES, and stream to Sandbox.',
@@ -520,6 +587,17 @@ export const translations: Record<Language, Translations> = {
     // Footer
     footerAuthority: 'Ministry of Finance of Costa Rica · General Directorate of Taxation · Formats v4.3 & v4.4',
     footerSecurity: 'XAdES-EPES Digital Signature · Law 8454 · AES-256-GCM Encrypted Storage',
+    footerRegulations: 'Law 8454 · Law 9635 · Resolutions DGT-R-033-2019 & DGT-R-028-2023',
+    footerEnvironment: 'Sandbox Testing Environment',
+
+    // Reception Table
+    thSupplier: 'Supplier / Issuer',
+    thClave: 'Invoice Clave (50d)',
+    thDate: 'Issue Date',
+    thDeadline8Days: '8-Working-Day Deadline',
+    thTotal: 'Total (₡)',
+    thVat: 'VAT (₡)',
+    thAction: 'Action',
 
     // Sandbox & Vault Settings Modal
     cfgModalTitle: 'Ministerio de Hacienda Sandbox & Cryptographic Vault Settings',
@@ -729,6 +807,34 @@ export const translations: Record<Language, Translations> = {
     b2bSampleBtn: 'Generar Clave Proveedor de Prueba',
     b2bHistoryTitle: 'Historial de Comprobantes Recibidos de Proveedores',
 
+    // 8-Working-Day Legal Deadline & Remedies
+    deadlineViolationTitle: 'Violación del Plazo Legal de 8 Días Hábiles (Ley 9635 Art. 27)',
+    deadlineViolationSubtitle: 'La normativa tributaria de Costa Rica exige emitir el Mensaje Receptor dentro de los 8 días hábiles posteriores a la emisión. Los comprobantes vencidos pierden derecho al crédito fiscal automático sin un remedio.',
+    deadlineViolatedBadge: 'Plazo Legal Vencido (>8 días)',
+    deadlineWarningBadge: 'Por Vencer (<2 días)',
+    deadlineOnTimeBadge: 'En Plazo Legal',
+    deadlineDaysElapsed: 'Días Hábiles Transcurridos',
+    deadlineOverdueNotice: 'Superó Plazo Legal',
+    deadlineDaysPast: 'días de retraso',
+    deadlineDaysRemaining: 'días restantes',
+    deadlineTaxRisk: 'Descalificación del Crédito Fiscal de IVA (Riesgo en D-104 y Renta)',
+    deadlineRemedyTitle: '¿Cómo solucionar y respaldar este vencimiento? (Remedios Tributarios)',
+    deadlineRemedySubtitle: 'Tres soluciones oficiales y reconocidas por la DGT para subsanar el vencimiento y proteger la deducción fiscal:',
+    remedySol1Title: 'Solución 1: Solicitar Nota de Crédito y Refacturación al Proveedor (100% Seguro)',
+    remedySol1Desc: 'Protocolo comercial y tributario estándar: El proveedor emite una Nota de Crédito (03) anulando la factura vencida y emite inmediatamente una nueva Factura Electrónica (01) con fecha de hoy. Esto reinicia legalmente el plazo de 8 días hábiles a Día 1 sin riesgo de contingencia tributaria.',
+    remedySol1Action: 'Simular Refacturación del Proveedor (Reiniciar Plazo)',
+    remedySol1CopyLetter: 'Copiar Carta Formal de Solicitud de Anulación al Proveedor',
+    remedySol2Title: 'Solución 2: Aceptación Extemporánea con Respaldo CPA (Condición 04 / Rectificativa D-104)',
+    remedySol2Desc: 'Emitir Mensaje Receptor bajo Condición 04 (Gasto Corriente) respaldado por orden de compra, comprobante de pago bancario y contratos según el Art. 48 del Código Tributario para justificar la deducibilidad del gasto en auditoría de Renta.',
+    remedySol2Action: 'Aceptar Extemporáneo con Justificación CPA (Condición 04)',
+    remedySol3Title: 'Solución 3: Rechazo Formal del Comprobante (Mensaje Receptor 07)',
+    remedySol3Desc: 'Si el proveedor no colabora o la factura contenía errores no subsanados, rechazar formalmente ante Hacienda para desvincularla de la contabilidad fiscal de la empresa.',
+    remedySol3Action: 'Rechazar Factura Formalmente (Código 07)',
+    incomingInvoicesTitle: 'Facturas de Proveedores Pendientes de Confirmar (Bandeja de Entrada)',
+    incomingInvoicesSubtitle: 'Supervisa el vencimiento de los 8 días hábiles obligatorios y ejecuta remedios inmediatos sobre documentos vencidos.',
+    btnConfirmReception: 'Confirmar Recepción',
+    letterCopiedToast: '¡Carta formal de solicitud de refacturación copiada al portapapeles!',
+
     // Bulk Processing
     bulkTitle: 'Procesamiento Masivo de Comprobantes (Bulk Processing)',
     bulkSubtitle: 'Genera lotes masivos de comprobantes electrónicos, firma digitalmente en paralelo y transmite a la cola de Hacienda.',
@@ -808,6 +914,17 @@ export const translations: Record<Language, Translations> = {
     // Footer
     footerAuthority: 'Ministerio de Hacienda de Costa Rica · Dirección General de Tributación · Formato v4.3 / v4.4',
     footerSecurity: 'Firma XAdES-EPES · Ley 8454 · Bóveda Cifrada AES-256-GCM',
+    footerRegulations: 'Ley 8454 · Ley 9635 · Resoluciones DGT-R-033-2019 y DGT-R-028-2023',
+    footerEnvironment: 'Entorno de Pruebas Sandbox',
+
+    // Reception Table
+    thSupplier: 'Proveedor / Emisor',
+    thClave: 'Clave Factura (50d)',
+    thDate: 'Fecha Emisión',
+    thDeadline8Days: 'Plazo 8 Días Hábiles',
+    thTotal: 'Total (₡)',
+    thVat: 'IVA (₡)',
+    thAction: 'Acción',
 
     // Sandbox & Vault Settings Modal
     cfgModalTitle: 'Configuración del Sandbox Ministerio de Hacienda & Bóveda Criptográfica',
@@ -862,7 +979,7 @@ export const translations: Record<Language, Translations> = {
     cfgScen6Title: '6. Prueba Clave Duplicada (Rechazo)',
     cfgScen6Desc: 'Simula rechazo 400 de Hacienda por clave previamente registrada.',
     cfgScen7Title: '7. Prueba Firma Inválida (Rechazo)',
-    cfgScen7Desc: 'Simulates rejection for untrusted certificate or corrupt digest.',
+    cfgScen7Desc: 'Simula rechazo por certificado no confiable o digest alterado.',
     cfgScen8Title: '8. Prueba Caída 503 & Reintento',
     cfgScen8Desc: 'Simula caída transitoria HTTP 503 y activa cola de reintentos exponenciales.',
     cfgBtnTest: 'Probar',
@@ -876,25 +993,57 @@ export const translations: Record<Language, Translations> = {
 };
 
 /**
- * Helper to localize notification title and message dynamically if emitted in Spanish.
+ * Helper to localize notification title and message dynamically between English and Spanish.
  */
 export function localizeNotification(lang: Language, title: string, message: string): { title: string; message: string } {
-  if (lang === 'es') return { title, message };
+  if (lang === 'es') {
+    // If input is in English, translate to Spanish
+    let esTitle = title;
+    let esMsg = message;
 
+    if (title.includes('Bulk Invoicing Batch')) esTitle = 'Lote de Facturación Masiva';
+    else if (title.includes('Schema Version Updated')) esTitle = 'Versión de Esquema Actualizada';
+    else if (title.includes('Legal Deadline Reset')) esTitle = 'Plazo Legal Reiniciado (Remedio Fiscal)';
+    else if (title.includes('CPA Late Acceptance')) esTitle = 'Aceptación Tardía CPA Registrada';
+    else if (title.includes('Invoice Formally Rejected')) esTitle = 'Factura Rechazada Formalmente';
+    else if (title.includes('Document Approved') || title.includes('Invoice Approved')) esTitle = 'Comprobante Aprobado';
+    else if (title.includes('Document Rejected') || title.includes('Invoice Rejected')) esTitle = 'Comprobante Rechazado';
+    else if (title.includes('New Company Registered')) esTitle = 'Nueva Empresa Registrada';
+    
+    return { title: esTitle, message: esMsg };
+  }
+
+  // lang === 'en'
   let locTitle = title;
   let locMsg = message;
 
   if (title.includes('Lote de Facturación Masiva')) locTitle = 'Bulk Invoicing Batch';
   else if (title.includes('Versión de Esquema Actualizada')) locTitle = 'Schema Version Updated';
+  else if (title.includes('Plazo Legal Reiniciado')) locTitle = 'Legal Deadline Reset (Tax Remedy)';
+  else if (title.includes('Aceptación Tardía CPA')) locTitle = 'CPA Late Acceptance Recorded';
+  else if (title.includes('Factura Rechazada Formalmente')) locTitle = 'Invoice Formally Rejected';
+  else if (title.includes('Comprobante Aprobado')) locTitle = 'Electronic Document Approved';
+  else if (title.includes('Comprobante Rechazado')) locTitle = 'Electronic Document Rejected';
   else if (title.includes('Nueva empresa registrada')) locTitle = 'New Company Registered';
   else if (title.includes('Comprobante')) locTitle = 'Electronic Document';
   else if (title.includes('Firma')) locTitle = 'Cryptographic Signature';
   else if (title.includes('Hacienda')) locTitle = 'Tax Authority Update';
 
+  // Message translations
   if (message.includes('Se emitieron y firmaron')) {
-    locMsg = message.replace(/Se emitieron y firmaron (\d+) comprobantes para (.+)/, 'Generated and digitally signed $1 documents for $2');
+    locMsg = message.replace(/Se emitieron y firmaron (\d+) comprobantes para (.+)/, 'Generated and digitally signed $1 documents for $2.');
   } else if (message.includes('ahora opera bajo la especificación')) {
     locMsg = message.replace(/La empresa (.+) ahora opera bajo la especificación v([\d.]+) del Ministerio de Hacienda\./, 'Company $1 now operates under Ministerio de Hacienda v$2 specification.');
+  } else if (message.includes('Se reemplazó la factura vencida de')) {
+    locMsg = message.replace(/Se reemplazó la factura vencida de (.+) con nuevo comprobante emitido hoy\. Crédito fiscal 100% habilitado\./, 'Replaced overdue invoice from $1 with new invoice issued today. 100% input VAT credit restored.');
+  } else if (message.includes('aceptada por Hacienda. Total:')) {
+    locMsg = message.replace(/Factura (.+) aceptada por Hacienda\. Total: (.+)/, 'Invoice $1 approved by Hacienda. Total: $2');
+  } else if (message.includes('aceptada con justificación contable')) {
+    locMsg = message.replace(/Factura de (.+) aceptada con justificación contable para gastos deducibles \(Condición 04\)\./, 'Invoice from $1 accepted with CPA justification for deductible operational expenses (Condition 04).');
+  } else if (message.includes('Mensaje Receptor 07 enviado para factura vencida')) {
+    locMsg = message.replace(/Mensaje Receptor 07 enviado para factura vencida de (.+)\. Desvinculada de pasivos fiscales\./, 'Reception Message 07 submitted for expired invoice from $1. Purged from tax liabilities.');
+  } else if (message.includes('rechazado por Hacienda. Motivo:')) {
+    locMsg = message.replace(/Documento con clave (.+) rechazado por Hacienda\. Motivo: (.+)/, 'Document with key $1 rejected by Hacienda. Reason: $2');
   }
 
   return { title: locTitle, message: locMsg };

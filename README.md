@@ -184,3 +184,13 @@ QR_VERIFICATION_URL=https://tribunet.hacienda.go.cr/docs/
 - **Resolución DGT-R-028-2023**: Electronic Invoicing & Reception Format v4.4 (TRIBU-CR).
 - **Ley 8454**: Law on Certificates, Digital Signatures and Electronic Documents of Costa Rica.
 - **Ley 9635**: Law for Strengthening Public Finances (Value Added Tax - IVA).
+
+---
+
+## 6. REST API Reference & Developer Documentation
+
+The platform provides a comprehensive REST API and in-app developer documentation explorer:
+- **Interactive In-App API Docs**: Click the **`API Docs`** button (`</>` icon) in the top navigation bar to open the live interactive API Explorer. You can search endpoints, copy cURL commands, test live requests, and download the OpenAPI 3.0 specification.
+- **Complete Markdown Specification**: See [API_DOCS.md](./API_DOCS.md) for full endpoint specifications, request/response JSON payloads, status codes, and 50-digit Clave / XAdES cryptographic algorithms.
+- **Technical & Compliance Guide**: See [DOCUMENTATION.md](./DOCUMENTATION.md) for functional workflows, Formulario D-104 tax reconciliation, and 8-working-day supplier invoice legal remedies.
+

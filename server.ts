@@ -164,6 +164,9 @@ export interface ReceptionDocument {
   estado: 'firmado' | 'enviado' | 'aceptado' | 'rechazado';
   haciendaMensaje?: string;
   fechaRegistro: string;
+  isDeadlineViolated?: boolean;
+  workingDaysElapsed?: number;
+  remedyApplied?: string;
 }
 
 export interface AuditLogEntry {
@@ -314,10 +317,61 @@ let companies: Company[] = [
 let activeCompanyId: string = 'COMP-1';
 
 // Documents, Receptions, Audit Logs, Notifications Store
+export interface SupplierInvoice {
+  id: string;
+  companyId: string;
+  clave: string;
+  consecutivo: string;
+  emisorNombre: string;
+  emisorCedula: string;
+  fechaEmision: string; // ISO string
+  montoTotalImpuesto: number;
+  totalComprobante: number;
+  estadoRecepcion?: 'pendiente' | 'aceptado_05' | 'aceptado_06' | 'rechazado_07' | 'reemplazado_nc';
+  diasHabilesTranscurridos: number;
+  diasRestantesOVencidos: number;
+  isViolated: boolean;
+  isWarning: boolean;
+  remedyApplied?: 'supplier_reissue' | 'cpa_late_justification' | 'rejection';
+  remedyNote?: string;
+}
+
 let documents: ElectronicDocument[] = [];
 let receptionDocuments: ReceptionDocument[] = [];
+let supplierInvoices: SupplierInvoice[] = [];
 let auditLogs: AuditLogEntry[] = [];
 let notifications: NotificationItem[] = [];
+
+/**
+ * Calculates working days elapsed (Monday-Friday) between issue date and today.
+ */
+export function calculateWorkingDays(fechaEmisionIso: string): {
+  workingDays: number;
+  isViolated: boolean;
+  isWarning: boolean;
+  daysRemainingOrOverdue: number;
+} {
+  const start = new Date(fechaEmisionIso);
+  start.setHours(0, 0, 0, 0);
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  let cur = new Date(start);
+  let workingDays = 0;
+  while (cur < now) {
+    cur.setDate(cur.getDate() + 1);
+    const day = cur.getDay();
+    if (day !== 0 && day !== 6) {
+      workingDays++;
+    }
+  }
+
+  const isViolated = workingDays > 8;
+  const isWarning = workingDays >= 6 && workingDays <= 8;
+  const daysRemainingOrOverdue = 8 - workingDays;
+
+  return { workingDays, isViolated, isWarning, daysRemainingOrOverdue };
+}
 
 /**
  * Gets currently active company.
@@ -939,6 +993,90 @@ function seedInitialData(): void {
     haciendaMensaje: 'Mensaje receptor aprobado por Hacienda.',
     fechaRegistro: new Date().toISOString(),
   });
+
+  // Seed incoming supplier invoices with various working-day ages:
+  // 1. On time (2 days ago)
+  const inv1Clave = generateClave('3101888111', '001', '00001', '01', 1204, new Date(Date.now() - 2 * 86400000));
+  const w1 = calculateWorkingDays(new Date(Date.now() - 2 * 86400000).toISOString());
+  supplierInvoices.push({
+    id: 'SUP-INV-1',
+    companyId: 'COMP-1',
+    clave: inv1Clave.clave,
+    consecutivo: inv1Clave.consecutivo,
+    emisorNombre: 'OFICINAS Y PAPELERÍA CENTRAL S.A.',
+    emisorCedula: '3101888111',
+    fechaEmision: new Date(Date.now() - 2 * 86400000).toISOString(),
+    montoTotalImpuesto: 12350,
+    totalComprobante: 95000,
+    estadoRecepcion: 'pendiente',
+    diasHabilesTranscurridos: w1.workingDays,
+    diasRestantesOVencidos: w1.daysRemainingOrOverdue,
+    isViolated: w1.isViolated,
+    isWarning: w1.isWarning,
+  });
+
+  // 2. Warning / Expiring Soon (7 working days ago - 1 day remaining)
+  const inv2Date = new Date(Date.now() - 9 * 86400000);
+  const inv2Clave = generateClave('3101666222', '001', '00001', '01', 3450, inv2Date);
+  const w2 = calculateWorkingDays(inv2Date.toISOString());
+  supplierInvoices.push({
+    id: 'SUP-INV-2',
+    companyId: 'COMP-1',
+    clave: inv2Clave.clave,
+    consecutivo: inv2Clave.consecutivo,
+    emisorNombre: 'SERVICIOS DE LIMPIEZA INDUSTRIAL S.A.',
+    emisorCedula: '3101666222',
+    fechaEmision: inv2Date.toISOString(),
+    montoTotalImpuesto: 23400,
+    totalComprobante: 180000,
+    estadoRecepcion: 'pendiente',
+    diasHabilesTranscurridos: w2.workingDays,
+    diasRestantesOVencidos: w2.daysRemainingOrOverdue,
+    isViolated: w2.isViolated,
+    isWarning: w2.isWarning,
+  });
+
+  // 3. VIOLATED DEADLINE (16 calendar days ago / ~12 working days - 4 days PAST LEGAL DEADLINE!)
+  const inv3Date = new Date(Date.now() - 16 * 86400000);
+  const inv3Clave = generateClave('3101777444', '001', '00001', '01', 7712, inv3Date);
+  const w3 = calculateWorkingDays(inv3Date.toISOString());
+  supplierInvoices.push({
+    id: 'SUP-INV-3',
+    companyId: 'COMP-1',
+    clave: inv3Clave.clave,
+    consecutivo: inv3Clave.consecutivo,
+    emisorNombre: 'DISTRIBUIDORA ELECTRÓNICA DEL SUR S.A.',
+    emisorCedula: '3101777444',
+    fechaEmision: inv3Date.toISOString(),
+    montoTotalImpuesto: 58500,
+    totalComprobante: 450000,
+    estadoRecepcion: 'pendiente',
+    diasHabilesTranscurridos: w3.workingDays,
+    diasRestantesOVencidos: w3.daysRemainingOrOverdue,
+    isViolated: true,
+    isWarning: false,
+  });
+
+  // 4. VIOLATED DEADLINE (22 calendar days ago / ~16 working days - 8 days PAST LEGAL DEADLINE!)
+  const inv4Date = new Date(Date.now() - 22 * 86400000);
+  const inv4Clave = generateClave('3101555666', '001', '00001', '01', 9931, inv4Date);
+  const w4 = calculateWorkingDays(inv4Date.toISOString());
+  supplierInvoices.push({
+    id: 'SUP-INV-4',
+    companyId: 'COMP-1',
+    clave: inv4Clave.clave,
+    consecutivo: inv4Clave.consecutivo,
+    emisorNombre: 'LOGÍSTICA & TRANSPORTE NACIONAL S.A.',
+    emisorCedula: '3101555666',
+    fechaEmision: inv4Date.toISOString(),
+    montoTotalImpuesto: 41600,
+    totalComprobante: 320000,
+    estadoRecepcion: 'pendiente',
+    diasHabilesTranscurridos: w4.workingDays,
+    diasRestantesOVencidos: w4.daysRemainingOrOverdue,
+    isViolated: true,
+    isWarning: false,
+  });
 }
 
 seedInitialData();
@@ -1420,6 +1558,162 @@ app.get('/api/reception', (req: Request, res: Response) => {
   res.json(recs);
 });
 
+// GET INCOMING SUPPLIER INVOICES (with live 8-working-day calculation)
+app.get('/api/reception/supplier-invoices', (req: Request, res: Response) => {
+  const { companyId } = req.query;
+  const targetCompany = (companyId as string) || (currentUser.role === 'admin' ? undefined : activeCompanyId);
+
+  // Dynamically recalculate working days relative to today
+  let list = supplierInvoices.map((inv) => {
+    const calc = calculateWorkingDays(inv.fechaEmision);
+    return {
+      ...inv,
+      diasHabilesTranscurridos: calc.workingDays,
+      diasRestantesOVencidos: calc.daysRemainingOrOverdue,
+      isViolated: calc.isViolated && inv.estadoRecepcion === 'pendiente',
+      isWarning: calc.isWarning && inv.estadoRecepcion === 'pendiente',
+    };
+  });
+
+  if (targetCompany) {
+    list = list.filter((i) => i.companyId === targetCompany);
+  }
+
+  res.json(list);
+});
+
+// REMEDIATION ENDPOINT FOR 8-WORKING-DAY DEADLINE VIOLATIONS
+app.post('/api/reception/supplier-invoices/remedy', (req: Request, res: Response) => {
+  try {
+    const company = getActiveCompany();
+    const { invoiceId, remedyType, note } = req.body;
+
+    const invoice = supplierInvoices.find((i) => i.id === invoiceId);
+    if (!invoice) {
+      return res.status(404).json({ error: 'Factura de proveedor no encontrada.' });
+    }
+
+    if (remedyType === 'supplier_reissue') {
+      // SOLUTION 1: Supplier cancels expired invoice with NC 03 and re-issues with today's date
+      const oldClave = invoice.clave;
+      const todayDate = new Date();
+      const newClaveObj = generateClave(invoice.emisorCedula, '001', '00001', '01', Math.floor(1000 + Math.random() * 9000), todayDate);
+      
+      invoice.remedyApplied = 'supplier_reissue';
+      invoice.remedyNote = note || 'Proveedor anuló factura vencida con Nota de Crédito 03 y emitió nueva Factura Electrónica. Plazo reiniciado legalmente a Día 1.';
+      invoice.clave = newClaveObj.clave;
+      invoice.consecutivo = newClaveObj.consecutivo;
+      invoice.fechaEmision = todayDate.toISOString();
+      invoice.diasHabilesTranscurridos = 0;
+      invoice.diasRestantesOVencidos = 8;
+      invoice.isViolated = false;
+      invoice.isWarning = false;
+      invoice.estadoRecepcion = 'pendiente';
+
+      recordAuditLog({
+        step: 'RECEPTION',
+        status: 'SUCCESS',
+        clave: invoice.clave,
+        companyId: company.id,
+        message: `Remedio de Plazo Vencido: Proveedor emitió NC 03 sobre clave previa (...${oldClave.slice(-8)}) y emitió nueva factura (...${newClaveObj.clave.slice(-8)}). Plazo de 8 días reiniciado.`,
+      });
+
+      recordNotification({
+        type: 'SUCCESS',
+        title: 'Plazo Legal Reiniciado (Remedio Fiscal)',
+        message: `Se reemplazó la factura vencida de ${invoice.emisorNombre} con nuevo comprobante emitido hoy. Crédito fiscal 100% habilitado.`,
+        clave: invoice.clave,
+      });
+
+      return res.json({ success: true, invoice, remedyType });
+    } else if (remedyType === 'cpa_late_justification') {
+      // SOLUTION 2: Proceed with late acceptance under Condition 04 / D-104 rectification with CPA justification
+      invoice.remedyApplied = 'cpa_late_justification';
+      invoice.remedyNote = note || 'Aceptación tardía autorizada por Contador Público (CPA) con respaldo de orden de compra y comprobante de pago para deducción en Formulario D-104.';
+      invoice.estadoRecepcion = 'aceptado_05';
+
+      // Record a reception doc under condition 04 or with late tag
+      const nextSeq = receptionDocuments.filter((r) => r.companyId === company.id).length + 1;
+      const consecutivoReceptor = `${company.sucursal}${company.puntoVenta}05${String(nextSeq).padStart(10, '0')}`;
+      const recDoc: ReceptionDocument = {
+        id: 'REC-' + crypto.randomUUID().slice(0, 8),
+        companyId: company.id,
+        claveDocumento: invoice.clave,
+        numeroConsecutivoReceptor: consecutivoReceptor,
+        fechaEmisionDoc: invoice.fechaEmision,
+        emisorNombre: invoice.emisorNombre,
+        emisorCedula: invoice.emisorCedula,
+        montoTotalImpuesto: invoice.montoTotalImpuesto,
+        totalFactura: invoice.totalComprobante,
+        tipoMensaje: '05',
+        detalleMensaje: 'Aceptación extemporánea con justificación contable para deducción de renta (Art. 48 CNPT).',
+        condicionImpuesto: '04', // Gasto corriente no genera crédito automático inmediato
+        montoTotalImpuestoAcreditar: 0,
+        estado: 'aceptado',
+        fechaRegistro: new Date().toISOString(),
+        isDeadlineViolated: true,
+        workingDaysElapsed: invoice.diasHabilesTranscurridos,
+        remedyApplied: 'cpa_late_justification',
+      };
+      receptionDocuments.unshift(recDoc);
+
+      recordAuditLog({
+        step: 'RECEPTION',
+        status: 'WARNING',
+        clave: invoice.clave,
+        companyId: company.id,
+        message: `Remedio de Plazo Vencido: Aceptación extemporánea registrada bajo Condición 04 con justificación contable para auditoría DGT.`,
+      });
+
+      return res.json({ success: true, invoice, reception: recDoc, remedyType });
+    } else if (remedyType === 'rejection') {
+      // SOLUTION 3: Formal rejection (07)
+      invoice.remedyApplied = 'rejection';
+      invoice.remedyNote = note || 'Factura rechazada por vencimiento de plazo legal y falta de colaboración del proveedor.';
+      invoice.estadoRecepcion = 'rechazado_07';
+
+      const nextSeq = receptionDocuments.filter((r) => r.companyId === company.id).length + 1;
+      const consecutivoReceptor = `${company.sucursal}${company.puntoVenta}07${String(nextSeq).padStart(10, '0')}`;
+      const recDoc: ReceptionDocument = {
+        id: 'REC-' + crypto.randomUUID().slice(0, 8),
+        companyId: company.id,
+        claveDocumento: invoice.clave,
+        numeroConsecutivoReceptor: consecutivoReceptor,
+        fechaEmisionDoc: invoice.fechaEmision,
+        emisorNombre: invoice.emisorNombre,
+        emisorCedula: invoice.emisorCedula,
+        montoTotalImpuesto: invoice.montoTotalImpuesto,
+        totalFactura: invoice.totalComprobante,
+        tipoMensaje: '07',
+        detalleMensaje: 'Rechazo total por incumplimiento de plazo legal de recepción y especificación tributaria.',
+        condicionImpuesto: '04',
+        montoTotalImpuestoAcreditar: 0,
+        estado: 'rechazado',
+        fechaRegistro: new Date().toISOString(),
+        isDeadlineViolated: true,
+        workingDaysElapsed: invoice.diasHabilesTranscurridos,
+        remedyApplied: 'rejection',
+      };
+      receptionDocuments.unshift(recDoc);
+
+      recordAuditLog({
+        step: 'RECEPTION',
+        status: 'INFO',
+        clave: invoice.clave,
+        companyId: company.id,
+        message: `Factura rechazada formalmente (Mensaje 07) por expiración del plazo legal de 8 días hábiles.`,
+      });
+
+      return res.json({ success: true, invoice, reception: recDoc, remedyType });
+    }
+
+    res.status(400).json({ error: 'Tipo de remedio no reconocido.' });
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: errorMsg });
+  }
+});
+
 app.post('/api/reception', (req: Request, res: Response) => {
   try {
     const company = getActiveCompany();
@@ -1466,6 +1760,12 @@ app.post('/api/reception', (req: Request, res: Response) => {
     recDoc.haciendaMensaje = `Mensaje de Receptor (${tipoMensaje === '05' ? 'Aceptado' : tipoMensaje === '06' ? 'Aceptado Parcial' : 'Rechazado'}) registrado oficialmente.`;
 
     receptionDocuments.unshift(recDoc);
+
+    // Update matched supplier invoice if present
+    const matchedSupplierInv = supplierInvoices.find((i) => i.clave === recDoc.claveDocumento);
+    if (matchedSupplierInv) {
+      matchedSupplierInv.estadoRecepcion = tipoMensaje === '05' ? 'aceptado_05' : tipoMensaje === '06' ? 'aceptado_06' : 'rechazado_07';
+    }
 
     recordAuditLog({
       step: 'RECEPTION',
@@ -1584,6 +1884,7 @@ app.post('/api/sandbox/preset-scenario', async (req: Request, res: Response) => 
     let scenarioDoc: any = {};
     switch (scenarioKey) {
       case 'standard_sale_13':
+      case 'scen1':
         scenarioDoc = {
           tipoDocumento: '01',
           receptor: {
@@ -1605,6 +1906,7 @@ app.post('/api/sandbox/preset-scenario', async (req: Request, res: Response) => 
         };
         break;
       case 'health_services_4':
+      case 'scen2':
         scenarioDoc = {
           tipoDocumento: '01',
           receptor: {
@@ -1626,6 +1928,7 @@ app.post('/api/sandbox/preset-scenario', async (req: Request, res: Response) => 
         };
         break;
       case 'tourism_services_8':
+      case 'scen3':
         scenarioDoc = {
           tipoDocumento: '01',
           receptor: {
@@ -1647,6 +1950,7 @@ app.post('/api/sandbox/preset-scenario', async (req: Request, res: Response) => 
         };
         break;
       case 'export_invoice_fee':
+      case 'scen4':
         scenarioDoc = {
           tipoDocumento: '09',
           moneda: 'USD',
@@ -1669,7 +1973,31 @@ app.post('/api/sandbox/preset-scenario', async (req: Request, res: Response) => 
           }],
         };
         break;
+      case 'simplified_regime_fec':
+      case 'scen5':
+        scenarioDoc = {
+          tipoDocumento: '08', // Factura Electrónica de Compra
+          receptor: {
+            nombre: 'DON PEDRO ARTESANÍAS RÚSTICAS (RÉGIMEN SIMPLIFICADO)',
+            tipoIdentificacion: '01',
+            numeroIdentificacion: '109880777',
+            correo: 'artesaniaspedro@gmail.com',
+          },
+          items: [{
+            numeroLinea: 1,
+            codigoCabys: '3812100000000',
+            detalle: 'Adquisición de mobiliario artesanal en madera rústica (Régimen Simplificado)',
+            cantidad: 1,
+            unidadMedida: 'Unid',
+            precioUnitario: 45000,
+            tarifaIva: 13,
+            codigoTarifaIva: '08',
+            naturalezaTributaria: 'gravado',
+          }],
+        };
+        break;
       case 'test_duplicate_clave':
+      case 'scen6':
         scenarioDoc = {
           tipoDocumento: '01',
           receptor: { nombre: 'TEST CLIENTE CLAVE DUPLICADA', tipoIdentificacion: '01', numeroIdentificacion: '110000333', correo: 'test@duplicado.cr' },
@@ -1677,6 +2005,7 @@ app.post('/api/sandbox/preset-scenario', async (req: Request, res: Response) => 
         };
         break;
       case 'test_signature_failure':
+      case 'scen7':
         scenarioDoc = {
           tipoDocumento: '01',
           receptor: { nombre: 'TEST CLIENTE FIRMA INVALIDA', tipoIdentificacion: '01', numeroIdentificacion: '110000222', correo: 'test@error.cr' },
@@ -1684,6 +2013,7 @@ app.post('/api/sandbox/preset-scenario', async (req: Request, res: Response) => 
         };
         break;
       case 'test_network_503_retry':
+      case 'scen8':
         scenarioDoc = {
           tipoDocumento: '01',
           receptor: { nombre: 'TEST CLIENTE REINTENTO 503', tipoIdentificacion: '01', numeroIdentificacion: '110000444', correo: 'test@retry.cr' },
@@ -1691,6 +2021,7 @@ app.post('/api/sandbox/preset-scenario', async (req: Request, res: Response) => 
         };
         break;
       case 'v44_rep_payment':
+      case 'scen9':
         scenarioDoc = {
           tipoDocumento: '10', // Recibo Electronico de Pago (v4.4)
           schemaVersion: '4.4',
@@ -1794,6 +2125,11 @@ app.post('/api/sandbox/preset-scenario', async (req: Request, res: Response) => 
     const errorMsg = err instanceof Error ? err.message : String(err);
     res.status(500).json({ error: errorMsg });
   }
+});
+
+// Explicit JSON 404 handler for any unhandled /api route to prevent HTML fallbacks
+app.all('/api/*', (req: Request, res: Response) => {
+  res.status(404).json({ error: `Endpoint API no encontrado: ${req.method} ${req.path}` });
 });
 
 /**

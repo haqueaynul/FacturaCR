@@ -53,6 +53,7 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = ({
 
   // Active validation suggestion tooltip
   const [activeTooltip, setActiveTooltip] = useState<string | null>(t.hintDocType);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Items
   const [items, setItems] = useState<DocumentItem[]>([
@@ -143,9 +144,10 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!receptorCedula || receptorCedula.length < 9) {
-      alert(lang === 'en' ? 'Customer Tax ID must be at least 9 digits.' : 'La cédula del cliente debe tener al menos 9 dígitos.');
+      setFormError(lang === 'en' ? 'Customer Tax ID must be at least 9 digits.' : 'La cédula del cliente debe tener al menos 9 dígitos.');
       return;
     }
+    setFormError(null);
 
     const payload = {
       tipoDocumento,
@@ -211,6 +213,14 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = ({
           <span className="text-emerald-500 font-semibold truncate max-w-xs">{sampleClave}</span>
         </div>
       </div>
+
+      {/* Form Error Banner */}
+      {formError && (
+        <div className="mb-4 p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg text-rose-400 text-xs flex items-center justify-between">
+          <span>{formError}</span>
+          <button type="button" onClick={() => setFormError(null)} className="text-rose-400 hover:text-white font-bold ml-2">✕</button>
+        </div>
+      )}
 
       {/* Beginner Explanation & Helper Box */}
       {activeTooltip && (

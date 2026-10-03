@@ -11,6 +11,7 @@ This comprehensive guide covers the operational workflows, technical architectur
 4. [API Authentication & Submission](#4-api-authentication--submission)
 5. [Asynchronous Processing & Validation](#5-asynchronous-processing--validation)
 6. [B2B Acceptance / Rejection (Recepción de Comprobantes)](#6-b2b-acceptance--rejection-recepción-de-comprobantes)
+7. [REST API Reference & Developer Integration](#7-rest-api-reference--developer-integration)
 
 ---
 
@@ -364,3 +365,68 @@ The platform generates, digitally signs with XAdES-EPES, and submits the XML:
 ```
 
 Once submitted, Hacienda returns a `202 Accepted` and processes the reception confirmation, officially recording the tax credit in the buyer's DGT tax account.
+
+---
+
+### E. How to Identify B2B Acceptance / Rejection Statuses
+
+In both XML exchanges and UI records, reception statuses are categorized by standardized indicators:
+
+| Code | Official Label | XML `<Mensaje>` Tag | Hacienda Response Effect | Form D-104 Impact |
+| :--- | :--- | :--- | :--- | :--- |
+| **`05`** | **Aceptación Total** | `<Mensaje>1</Mensaje>` | Authorizes 100% deduction | Adds to Line 23 (Crédito Fiscal) |
+| **`06`** | **Aceptación Parcial** | `<Mensaje>2</Mensaje>` | Authorizes partial VAT credit | Deducts accepted portion only |
+| **`07`** | **Rechazo Total** | `<Mensaje>3</Mensaje>` | Rejects deduction entirely | 0 credit; purges invoice liability |
+
+#### How to Identify in `<MensajeHacienda>` Response XML:
+Hacienda responds with an official authorization block:
+- `<Mensaje>1</Mensaje>` inside `<MensajeHacienda>` indicates **Aceptado** (Authorized).
+- `<Mensaje>3</Mensaje>` indicates **Rechazado** (Rejected with reason code in `<DetalleMensaje>`).
+
+---
+
+### F. The 8-Working-Day Legal Deadline Violation & How to Lean Back to a Solution
+
+#### The Legal Obligation (Law 9635, Art. 27 & Resolution DGT-R-033-2019):
+Costa Rica tax regulations establish that taxpayers must issue their **Mensaje Receptor** within **eight (8) business days** (Monday through Friday, excluding national holidays) following the date of invoice issuance. If an invoice exceeds this statutory window, the Dirección General de Tributación automatically flags the input VAT credit as disqualified upon audit.
+
+#### Overdue Item Identification:
+In this application, incoming supplier invoices are continuously evaluated against today's date:
+- **Green (`Within Legal Window`)**: 1 to 5 working days elapsed.
+- **Amber (`Expiring Soon`)**: 6 to 8 working days elapsed (immediate confirmation recommended).
+- **Red (`Legal Deadline Violated`)**: >8 working days elapsed. The invoice is highlighted with the exact days overdue and the at-risk tax credit amount.
+
+#### How to Lean Back to a Solution (Recognized Tax Remedies):
+
+When an 8-working-day deadline violation occurs, taxpayers have three legally compliant procedures to resolve the issue:
+
+##### 1. Solution 1: Request Supplier Credit Note (03) & Immediate Re-invoice (Gold Standard - 100% Tax Credit Safe)
+- **Mechanism**: The buyer contacts the supplier's billing department. The supplier issues a **Nota de Crédito Electrónica (03)** referencing the expired invoice, completely annulling it, and immediately issues a new **Factura Electrónica (01)** with today's date.
+- **Why it works**: Legally resets the 8-working-day clock to **Day 1**. The buyer can now submit Mensaje Receptor `05` on-time, fully claiming 100% of the input VAT credit without audit risk.
+- **In-App Action**: Click **"1. Reset Clock (Supplier NC)"** on the overdue item to simulate or execute this annulment and reset the clock. Use the **"Copy Request Letter"** button to copy a formal legal request letter formatted for your supplier.
+
+##### 2. Solution 2: Extemporaneous Acceptance with CPA Audit Dossier (Condition 04 / D-104 Rectification)
+- **Mechanism**: If the supplier cannot re-issue the invoice, the buyer submits the Mensaje Receptor using **Tax Condition 04 (Operational Expense - Gasto Corriente)** rather than Condition 01.
+- **Why it works**: While direct VAT credit offset may be deferred or disallowed, the expense remains fully deductible against **Corporate Income Tax (*Impuesto sobre las Utilidades*)** under Article 48 of the Tax Code (*Código de Normas y Procedimientos Tributarios - CNPT*), provided the transaction has tangible proof of delivery:
+  - Bank wire receipt or SINPE transfer voucher.
+  - Signed purchase order (*Orden de Compra*).
+  - Supplier delivery receipt or contract.
+- **In-App Action**: Click **"2. Late CPA Note"** to submit extemporaneous acceptance under Condition 04 with CPA compliance note.
+
+##### 3. Solution 3: Formal Document Rejection (Mensaje Receptor 07)
+- **Mechanism**: If the vendor refuses to cooperate, the service was never delivered, or the invoice was issued erroneously to your tax ID, the buyer submits **Mensaje Receptor 07 (Rechazo Total)**.
+- **Why it works**: Completely decouples the unacknowledged document from your tax accounting records, legally notifying Hacienda that your business does not accept the commercial or tax liability.
+- **In-App Action**: Submit code `07` from the reception manager form.
+
+---
+
+## 7. REST API Reference & Developer Integration
+
+The platform includes a complete, production-ready REST API implementing all requirements of Ministerio de Hacienda Resolutions **DGT-R-033-2019** (v4.3) and **DGT-R-028-2023** (v4.4).
+
+### Key Integration Resources:
+- **Interactive In-App API Docs**: Click the **`API Docs`** button (`</>` icon) in the application header to launch the interactive live explorer. It provides live request execution ("Try it out"), parameter editing, response code verification, and instant cURL snippet generation.
+- **Downloadable OpenAPI 3.0**: Inside the API Docs modal, click **"OpenAPI 3.0"** to download the complete specification JSON formatted for immediate import into Postman, Insomnia, or Swagger.
+- **Complete REST Reference**: Read [API_DOCS.md](./API_DOCS.md) for full endpoint specifications, required HTTP headers, request payloads, response samples, error codes, 50-digit Clave breakdown, and XAdES-EPES cryptographic hashing rules.
+
+

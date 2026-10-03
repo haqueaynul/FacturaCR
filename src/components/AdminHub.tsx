@@ -42,6 +42,7 @@ export const AdminHub: React.FC<AdminHubProps> = ({
   const t = translations[lang];
   const [selectedReport, setSelectedReport] = useState<CompanyAccountingReport | null>(null);
   const [isLoadingReport, setIsLoadingReport] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
 
   /**
    * Fetches and displays comprehensive accounting report for any company.
@@ -49,11 +50,13 @@ export const AdminHub: React.FC<AdminHubProps> = ({
   const handleViewCompanyReport = async (companyId: string) => {
     try {
       setIsLoadingReport(true);
+      setReportError(null);
       const rep = await fetchAdminCompanyReport(companyId);
       setSelectedReport(rep);
-    } catch (err) {
-      console.error(err);
-      alert('Error cargando reporte contable');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn('Accounting report error:', msg);
+      setReportError(lang === 'en' ? 'Unable to load accounting report for selected company.' : 'Error al cargar reporte contable de la empresa.');
     } finally {
       setIsLoadingReport(false);
     }
@@ -94,6 +97,13 @@ export const AdminHub: React.FC<AdminHubProps> = ({
           <span>{t.adminRegisterCompBtn}</span>
         </button>
       </div>
+
+      {reportError && (
+        <div className="mb-4 p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg text-rose-300 text-xs flex items-center justify-between">
+          <span>{reportError}</span>
+          <button onClick={() => setReportError(null)} className="text-rose-400 hover:text-white font-bold ml-2">✕</button>
+        </div>
+      )}
 
       {/* Companies Grid */}
       <div className="mb-6">

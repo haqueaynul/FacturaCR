@@ -28,6 +28,7 @@ import {
   Calculator,
   Scale,
   Shield,
+  Code2,
 } from 'lucide-react';
 import { Language, translations, localizeNotification } from '../i18n';
 import { Company, NotificationItem, User, SchemaVersion } from '../types';
@@ -49,6 +50,7 @@ interface HeaderProps {
   onOpenAuth: () => void;
   onSignOut: () => void;
   onOpenSettings: () => void;
+  onOpenApiDocs?: () => void;
   onOpenReports: () => void;
   onOpenTestScenarios: () => void;
   onClearNotifications: () => void;
@@ -73,6 +75,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAuth,
   onSignOut,
   onOpenSettings,
+  onOpenApiDocs,
   onOpenReports,
   onOpenTestScenarios,
   onClearNotifications,
@@ -319,6 +322,22 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
               )}
             </div>
+
+            {/* API Docs Interactive Explorer */}
+            {onOpenApiDocs && (
+              <button
+                onClick={onOpenApiDocs}
+                className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer ${
+                  theme === 'bright'
+                    ? 'bg-slate-100 border-slate-200 text-emerald-700 hover:bg-slate-200'
+                    : 'bg-slate-800/80 border-slate-700 text-emerald-400 hover:bg-slate-800 hover:text-emerald-300'
+                }`}
+                title={lang === 'en' ? 'REST API Documentation & Live Explorer' : 'Documentación y Explorador de API REST'}
+              >
+                <Code2 className="w-3.5 h-3.5 text-emerald-500" />
+                <span className="hidden sm:inline">API Docs</span>
+              </button>
+            )}
 
             {/* Settings & Credentials */}
             <button

@@ -15,6 +15,8 @@ import {
   Scale,
   Building,
   CheckCircle2,
+  AlertTriangle,
+  Info,
 } from 'lucide-react';
 import { Language, translations } from './i18n';
 import { Header } from './components/Header';
@@ -34,10 +36,12 @@ import { ScheduledReportsModal } from './components/ScheduledReportsModal';
 import { CompanyModal } from './components/CompanyModal';
 import { AuthModal } from './components/AuthModal';
 import { VersionComparisonModal } from './components/VersionComparisonModal';
+import { ApiDocsModal } from './components/ApiDocsModal';
 
 import {
   ElectronicDocument,
   ReceptionDocument,
+  SupplierInvoice,
   Company,
   AuditLogEntry,
   NotificationItem,
@@ -63,6 +67,8 @@ import {
   queryDocumentStatus,
   submitB2BReception,
   fetchReceptions,
+  fetchSupplierInvoices,
+  applyDeadlineRemedy,
   runBulkProcessing,
   loadPresetScenario,
   fetchAuditLogs,
@@ -87,6 +93,7 @@ export default function App() {
   // Core Data
   const [documents, setDocuments] = useState<ElectronicDocument[]>([]);
   const [receptions, setReceptions] = useState<ReceptionDocument[]>([]);
+  const [supplierInvoices, setSupplierInvoices] = useState<SupplierInvoice[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [taxSummary, setTaxSummary] = useState<TaxReportSummary | null>(null);
@@ -98,6 +105,7 @@ export default function App() {
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
+  const [isApiDocsOpen, setIsApiDocsOpen] = useState(false);
   const [isSwitchingVersion, setIsSwitchingVersion] = useState(false);
 
   // Next-Step Guide Banner
@@ -111,50 +119,60 @@ export default function App() {
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [isSavingCompany, setIsSavingCompany] = useState(false);
   const [isAuthSubmitting, setIsAuthSubmitting] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   const t = translations[lang];
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
   };
 
+  const isSyncingRef = React.useRef(false);
+
   /**
-   * Refreshes all system states.
+   * Refreshes all system states with resilient settled results.
    */
   const loadAllData = useCallback(async () => {
+    if (isSyncingRef.current) return;
+    isSyncingRef.current = true;
     try {
       setIsRefreshing(true);
-      const [usr, comps, cfg, docs, recs, logs, notifs, summary] = await Promise.all([
+      const results = await Promise.allSettled([
         fetchCurrentUser(),
         fetchCompanies(),
         fetchTaxpayerConfig(),
         fetchDocuments(),
         fetchReceptions(),
+        fetchSupplierInvoices(),
         fetchAuditLogs(),
         fetchNotifications(),
         fetchTaxSummary(),
       ]);
 
-      setUser(usr);
-      setCompanies(comps);
-      setCompany(cfg);
-      setDocuments(docs);
-      setReceptions(recs);
-      setAuditLogs(logs);
-      setNotifications(notifs);
-      setTaxSummary(summary);
-    } catch (err) {
-      console.error('Error loading data:', err);
+      const [usr, comps, cfg, docs, recs, suppInvs, logs, notifs, summary] = results;
+
+      if (usr.status === 'fulfilled' && usr.value) setUser(usr.value);
+      if (comps.status === 'fulfilled' && comps.value) setCompanies(comps.value);
+      if (cfg.status === 'fulfilled' && cfg.value) setCompany(cfg.value);
+      if (docs.status === 'fulfilled' && docs.value) setDocuments(docs.value);
+      if (recs.status === 'fulfilled' && recs.value) setReceptions(recs.value);
+      if (suppInvs.status === 'fulfilled' && suppInvs.value) setSupplierInvoices(suppInvs.value);
+      if (logs.status === 'fulfilled' && logs.value) setAuditLogs(logs.value);
+      if (notifs.status === 'fulfilled' && notifs.value) setNotifications(notifs.value);
+      if (summary.status === 'fulfilled' && summary.value) setTaxSummary(summary.value);
+    } catch (err: unknown) {
+      // Gracefully handle any unexpected sync exception without crashing the UI
+      console.warn('Sync notice:', err instanceof Error ? err.message : String(err));
     } finally {
+      isSyncingRef.current = false;
       setIsRefreshing(false);
     }
   }, []);
 
   useEffect(() => {
     loadAllData();
-    const interval = setInterval(loadAllData, 4000);
+    const interval = setInterval(loadAllData, 5000);
     return () => clearInterval(interval);
   }, [loadAllData]);
 
@@ -168,7 +186,7 @@ export default function App() {
       await loadAllData();
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      alert(errorMsg);
+      showToast(errorMsg, 'error');
     } finally {
       setIsSubmittingDoc(false);
     }
@@ -181,7 +199,7 @@ export default function App() {
       await loadAllData();
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      alert(errorMsg);
+      showToast(errorMsg, 'error');
     }
   };
 
@@ -192,7 +210,7 @@ export default function App() {
       await loadAllData();
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      alert(errorMsg);
+      showToast(errorMsg, 'error');
     }
   };
 
@@ -204,9 +222,36 @@ export default function App() {
       await loadAllData();
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      alert(errorMsg);
+      showToast(errorMsg, 'error');
     } finally {
       setIsSubmittingRec(false);
+    }
+  };
+
+  const handleApplyRemedy = async (
+    invoiceId: string,
+    remedyType: 'supplier_reissue' | 'cpa_late_justification' | 'rejection',
+    note?: string
+  ) => {
+    try {
+      await applyDeadlineRemedy(invoiceId, remedyType, note);
+      showToast(
+        lang === 'en'
+          ? (remedyType === 'supplier_reissue'
+              ? 'Supplier re-issuance simulated: 8-day clock reset!'
+              : remedyType === 'cpa_late_justification'
+              ? 'Late acceptance recorded with CPA audit note (Condition 04).'
+              : 'Invoice formally rejected (Mensaje Receptor 07).')
+          : (remedyType === 'supplier_reissue'
+              ? '¡Refacturación del proveedor simulada: Plazo legal reiniciado!'
+              : remedyType === 'cpa_late_justification'
+              ? 'Aceptación tardía registrada con nota CPA (Condición 04).'
+              : 'Factura rechazada formalmente (Mensaje Receptor 07).')
+      );
+      await loadAllData();
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      showToast(errorMsg, 'error');
     }
   };
 
@@ -219,7 +264,7 @@ export default function App() {
       return res;
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      alert(errorMsg);
+      showToast(errorMsg, 'error');
       return { success: false, batchSize: 0 };
     } finally {
       setIsProcessingBulk(false);
@@ -245,7 +290,7 @@ export default function App() {
       await loadAllData();
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      alert(errorMsg);
+      showToast(errorMsg, 'error');
     } finally {
       setIsSavingCompany(false);
     }
@@ -260,7 +305,7 @@ export default function App() {
       await loadAllData();
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      alert(errorMsg);
+      showToast(errorMsg, 'error');
     } finally {
       setIsAuthSubmitting(false);
     }
@@ -275,7 +320,7 @@ export default function App() {
       await loadAllData();
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      alert(errorMsg);
+      showToast(errorMsg, 'error');
     } finally {
       setIsAuthSubmitting(false);
     }
@@ -295,7 +340,7 @@ export default function App() {
       await loadAllData();
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      alert(errorMsg);
+      showToast(errorMsg, 'error');
     } finally {
       setIsSavingSettings(false);
     }
@@ -309,7 +354,7 @@ export default function App() {
       await loadAllData();
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      alert(errorMsg);
+      showToast(errorMsg, 'error');
     }
   };
 
@@ -339,7 +384,7 @@ export default function App() {
       await loadAllData();
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      alert(errorMsg);
+      showToast(errorMsg, 'error');
     } finally {
       setIsSwitchingVersion(false);
     }
@@ -367,6 +412,7 @@ export default function App() {
         onOpenAuth={() => setIsAuthModalOpen(true)}
         onSignOut={handleSignOut}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenApiDocs={() => setIsApiDocsOpen(true)}
         onOpenReports={() => setIsReportsOpen(true)}
         onOpenTestScenarios={() => setIsSettingsOpen(true)}
         onClearNotifications={() => { clearNotifications(); setNotifications([]); }}
@@ -515,7 +561,9 @@ export default function App() {
             lang={lang}
             theme={theme}
             receptions={receptions}
+            supplierInvoices={supplierInvoices}
             onSubmitReception={handleSubmitReception}
+            onApplyRemedy={handleApplyRemedy}
             isSubmitting={isSubmittingRec}
           />
         )}
@@ -583,22 +631,33 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className={`border-t py-4 text-center text-xs ${
-        isBright ? 'bg-white border-slate-200 text-slate-500' : 'bg-slate-950 border-slate-900 text-slate-500'
+      <footer className={`border-t py-4 text-xs ${
+        isBright ? 'bg-white border-slate-200 text-slate-500' : 'bg-slate-950 border-slate-900 text-slate-400'
       }`}>
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>
-            {t.footerAuthority}
-          </span>
-          <span className="font-mono text-[11px] text-slate-500">
-            {t.footerSecurity}
-          </span>
+        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-3 text-center md:text-left">
+          <div className="space-y-1">
+            <div className="font-semibold text-slate-700 dark:text-slate-300">
+              {t.footerAuthority}
+            </div>
+            <div className="text-[11px] text-slate-400">
+              {t.footerRegulations}
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 font-mono text-[11px]">
+            <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-sans">
+              {t.footerEnvironment} (v{activeVersion})
+            </span>
+            <span className="text-slate-500">
+              {t.footerSecurity}
+            </span>
+          </div>
         </div>
       </footer>
 
       {/* Modals */}
       {selectedDocument && (
         <DocumentDetailModal
+          lang={lang}
           document={selectedDocument}
           onClose={() => setSelectedDocument(null)}
         />
@@ -618,6 +677,7 @@ export default function App() {
 
       {isReportsOpen && (
         <ScheduledReportsModal
+          lang={lang}
           summary={taxSummary}
           taxpayer={company}
           documents={documents}
@@ -658,11 +718,31 @@ export default function App() {
         />
       )}
 
+      {isApiDocsOpen && (
+        <ApiDocsModal
+          lang={lang}
+          theme={theme}
+          onClose={() => setIsApiDocsOpen(false)}
+        />
+      )}
+
       {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-5 right-5 z-50 bg-slate-900 border border-emerald-500/40 text-emerald-300 px-4 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2 text-xs font-semibold animate-slide-up">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span>{toastMessage}</span>
+      {toast && (
+        <div className={`fixed bottom-5 right-5 z-50 px-4 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2 text-xs font-semibold animate-slide-up border ${
+          toast.type === 'error'
+            ? 'bg-slate-900 border-rose-500/50 text-rose-300'
+            : toast.type === 'info'
+            ? 'bg-slate-900 border-sky-500/50 text-sky-300'
+            : 'bg-slate-900 border-emerald-500/40 text-emerald-300'
+        }`}>
+          {toast.type === 'error' ? (
+            <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+          ) : toast.type === 'info' ? (
+            <Info className="w-4 h-4 text-sky-400 shrink-0" />
+          ) : (
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          )}
+          <span>{toast.message}</span>
         </div>
       )}
     </div>

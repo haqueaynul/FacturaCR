@@ -19,9 +19,11 @@ import {
   Clock,
   Printer,
 } from 'lucide-react';
+import { Language } from '../i18n';
 import { ElectronicDocument } from '../types';
 
 interface DocumentDetailModalProps {
+  lang: Language;
   document: ElectronicDocument | null;
   onClose: () => void;
 }
@@ -30,9 +32,11 @@ interface DocumentDetailModalProps {
  * Inspection modal for electronic document XML, cryptographic signature, and official response.
  */
 export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
+  lang,
   document,
   onClose,
 }) => {
+  const isEn = lang === 'en';
   const [activeTab, setActiveTab] = useState<'resumen' | 'xmlFirmado' | 'xmlOriginal' | 'respuestaHacienda'>('resumen');
   const [copiedClave, setCopiedClave] = useState(false);
 
@@ -89,14 +93,14 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
             <div>
               <div className="flex items-center space-x-2">
                 <h3 className="font-bold text-white text-base">
-                  Comprobante Consecutivo {document.consecutivo}
+                  {isEn ? 'Document Consecutivo' : 'Comprobante Consecutivo'} {document.consecutivo}
                 </h3>
                 <span className="text-xs px-2 py-0.5 rounded font-mono uppercase bg-slate-700 text-slate-300">
-                  {document.tipoDocumento === '01' ? 'Factura Electrónica' : 'Comprobante v4.3'}
+                  {document.tipoDocumento === '01' ? (isEn ? 'Electronic Invoice' : 'Factura Electrónica') : `Comprobante v${document.schemaVersion || '4.4'}`}
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Emitido el {new Date(document.fechaEmision).toLocaleString('es-CR')}
+                {isEn ? 'Emitted on' : 'Emitido el'} {new Date(document.fechaEmision).toLocaleString(isEn ? 'en-US' : 'es-CR')}
               </p>
             </div>
           </div>
@@ -104,14 +108,14 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
           <div className="flex items-center space-x-2">
             <button
               onClick={() => handleDownloadXml(document.xmlFirmado || document.xmlOriginal, `${document.clave}-firmado.xml`)}
-              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 rounded-lg flex items-center space-x-1.5 transition-colors"
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 rounded-lg flex items-center space-x-1.5 transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5 text-blue-400" />
-              <span>Descargar XML</span>
+              <span>{isEn ? 'Download XML' : 'Descargar XML'}</span>
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -123,50 +127,50 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-1.5 text-xs font-semibold text-slate-300 uppercase tracking-wider">
               <Hash className="w-4 h-4 text-emerald-400" />
-              <span>Desglose Estructurado de Clave Numérica (50 Dígitos)</span>
+              <span>{isEn ? 'Structured 50-Digit Numeric Clave Breakdown' : 'Desglose Estructurado de Clave Numérica (50 Dígitos)'}</span>
             </div>
             <button
               onClick={handleCopyClave}
-              className="text-xs text-slate-400 hover:text-emerald-400 flex items-center space-x-1"
+              className="text-xs text-slate-400 hover:text-emerald-400 flex items-center space-x-1 cursor-pointer"
             >
               {copiedClave ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{copiedClave ? 'Copiado' : 'Copiar Clave'}</span>
+              <span>{copiedClave ? (isEn ? 'Copied' : 'Copiado') : (isEn ? 'Copy Clave' : 'Copiar Clave')}</span>
             </button>
           </div>
 
           {/* Color-Coded Segments */}
           <div className="flex flex-wrap gap-1 font-mono text-xs text-center">
-            <div className="bg-blue-900/40 border border-blue-600/40 px-2 py-1 rounded" title="Código País (506 - Costa Rica)">
+            <div className="bg-blue-900/40 border border-blue-600/40 px-2 py-1 rounded" title="Country Code (506 - Costa Rica)">
               <span className="text-blue-300 font-bold">{claveCountry}</span>
-              <span className="block text-[9px] text-blue-400">País</span>
+              <span className="block text-[9px] text-blue-400">{isEn ? 'Country' : 'País'}</span>
             </div>
-            <div className="bg-indigo-900/40 border border-indigo-600/40 px-2 py-1 rounded" title="Día / Mes / Año">
+            <div className="bg-indigo-900/40 border border-indigo-600/40 px-2 py-1 rounded" title="Day / Month / Year">
               <span className="text-indigo-300 font-bold">{claveDay}{claveMonth}{claveYear}</span>
-              <span className="block text-[9px] text-indigo-400">Fecha</span>
+              <span className="block text-[9px] text-indigo-400">{isEn ? 'Date' : 'Fecha'}</span>
             </div>
-            <div className="bg-emerald-900/40 border border-emerald-600/40 px-2 py-1 rounded" title="Cédula Emisor (12 dígitos)">
+            <div className="bg-emerald-900/40 border border-emerald-600/40 px-2 py-1 rounded" title="Issuer Tax ID (12 digits)">
               <span className="text-emerald-300 font-bold">{claveCedula}</span>
-              <span className="block text-[9px] text-emerald-400">Cédula Emisor</span>
+              <span className="block text-[9px] text-emerald-400">{isEn ? 'Issuer ID' : 'Cédula Emisor'}</span>
             </div>
-            <div className="bg-amber-900/40 border border-amber-600/40 px-2 py-1 rounded" title="Sucursal (3) + Terminal (5)">
+            <div className="bg-amber-900/40 border border-amber-600/40 px-2 py-1 rounded" title="Branch (3) + Terminal (5)">
               <span className="text-amber-300 font-bold">{claveSucursal}-{claveTerminal}</span>
-              <span className="block text-[9px] text-amber-400">Suc / Term</span>
+              <span className="block text-[9px] text-amber-400">{isEn ? 'Branch/Term' : 'Suc / Term'}</span>
             </div>
-            <div className="bg-purple-900/40 border border-purple-600/40 px-2 py-1 rounded" title="Tipo Documento (2)">
+            <div className="bg-purple-900/40 border border-purple-600/40 px-2 py-1 rounded" title="Document Type (2 digits)">
               <span className="text-purple-300 font-bold">{claveTipoDoc}</span>
-              <span className="block text-[9px] text-purple-400">Tipo</span>
+              <span className="block text-[9px] text-purple-400">{isEn ? 'Type' : 'Tipo'}</span>
             </div>
-            <div className="bg-teal-900/40 border border-teal-600/40 px-2 py-1 rounded" title="Secuencia Numérica (10)">
+            <div className="bg-teal-900/40 border border-teal-600/40 px-2 py-1 rounded" title="Numeric Sequence (10 digits)">
               <span className="text-teal-300 font-bold">{claveSecuencia}</span>
-              <span className="block text-[9px] text-teal-400">Secuencia</span>
+              <span className="block text-[9px] text-teal-400">{isEn ? 'Sequence' : 'Secuencia'}</span>
             </div>
-            <div className="bg-rose-900/40 border border-rose-600/40 px-2 py-1 rounded" title="Situación del Comprobante (1: Normal)">
+            <div className="bg-rose-900/40 border border-rose-600/40 px-2 py-1 rounded" title="Document Situation (1: Normal)">
               <span className="text-rose-300 font-bold">{claveSituacion}</span>
-              <span className="block text-[9px] text-rose-400">Sit.</span>
+              <span className="block text-[9px] text-rose-400">{isEn ? 'Sit.' : 'Sit.'}</span>
             </div>
-            <div className="bg-slate-800 border border-slate-700 px-2 py-1 rounded" title="Código de Seguridad (8 dígitos)">
+            <div className="bg-slate-800 border border-slate-700 px-2 py-1 rounded" title="Security Code (8 digits)">
               <span className="text-slate-300 font-bold">{claveSeguridad}</span>
-              <span className="block text-[9px] text-slate-400">Seguridad</span>
+              <span className="block text-[9px] text-slate-400">{isEn ? 'Security' : 'Seguridad'}</span>
             </div>
           </div>
         </div>
@@ -175,45 +179,45 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
         <div className="px-4 border-b border-slate-800 flex space-x-4 bg-slate-900/80 text-xs font-semibold">
           <button
             onClick={() => setActiveTab('resumen')}
-            className={`py-3 border-b-2 transition-colors ${
+            className={`py-3 border-b-2 transition-colors cursor-pointer ${
               activeTab === 'resumen'
                 ? 'border-emerald-400 text-emerald-400'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
-            Resumen Comercial
+            {isEn ? 'Commercial Summary' : 'Resumen Comercial'}
           </button>
           <button
             onClick={() => setActiveTab('xmlFirmado')}
-            className={`py-3 border-b-2 transition-colors flex items-center space-x-1.5 ${
+            className={`py-3 border-b-2 transition-colors flex items-center space-x-1.5 cursor-pointer ${
               activeTab === 'xmlFirmado'
                 ? 'border-emerald-400 text-emerald-400'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
-            <span>XML Firmado (XAdES-EPES)</span>
+            <span>{isEn ? 'Signed XML (XAdES-EPES)' : 'XML Firmado (XAdES-EPES)'}</span>
           </button>
           <button
             onClick={() => setActiveTab('respuestaHacienda')}
-            className={`py-3 border-b-2 transition-colors flex items-center space-x-1.5 ${
+            className={`py-3 border-b-2 transition-colors flex items-center space-x-1.5 cursor-pointer ${
               activeTab === 'respuestaHacienda'
                 ? 'border-emerald-400 text-emerald-400'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <FileCode className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Respuesta Oficial Hacienda</span>
+            <span>{isEn ? 'Official Tax Response' : 'Respuesta Oficial Hacienda'}</span>
           </button>
           <button
             onClick={() => setActiveTab('xmlOriginal')}
-            className={`py-3 border-b-2 transition-colors ${
+            className={`py-3 border-b-2 transition-colors cursor-pointer ${
               activeTab === 'xmlOriginal'
                 ? 'border-emerald-400 text-emerald-400'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
-            XML Original v4.3
+            {isEn ? 'Original Canonical XML' : 'XML Original'}
           </button>
         </div>
 
@@ -226,30 +230,30 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
                 {/* Emisor */}
                 <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
-                    Emisor / Contribuyente
+                    {isEn ? 'Issuer / Taxpayer' : 'Emisor / Contribuyente'}
                   </span>
                   <div className="font-semibold text-white text-sm">{document.emisor.nombre}</div>
                   <div className="text-slate-400 font-mono text-[11px] mt-0.5">
-                    Cédula: {document.emisor.numeroIdentificacion} (Tipo {document.emisor.tipoIdentificacion})
+                    {isEn ? 'Tax ID' : 'Cédula'}: {document.emisor.numeroIdentificacion} ({isEn ? 'Type' : 'Tipo'} {document.emisor.tipoIdentificacion})
                   </div>
                   <div className="text-slate-400 text-[11px] mt-0.5">{document.emisor.correo}</div>
                   <div className="mt-2 text-[10px] text-emerald-400 bg-emerald-500/10 inline-block px-2 py-0.5 rounded border border-emerald-500/20">
-                    Régimen: {document.emisor.regimen}
+                    {isEn ? 'Regime' : 'Régimen'}: {document.emisor.regimen}
                   </div>
                 </div>
 
                 {/* Receptor */}
                 <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
-                    Receptor / Cliente
+                    {isEn ? 'Customer / Receptor' : 'Receptor / Cliente'}
                   </span>
                   <div className="font-semibold text-white text-sm">{document.receptor.nombre}</div>
                   <div className="text-slate-400 font-mono text-[11px] mt-0.5">
-                    Cédula: {document.receptor.numeroIdentificacion} (Tipo {document.receptor.tipoIdentificacion})
+                    {isEn ? 'Tax ID' : 'Cédula'}: {document.receptor.numeroIdentificacion} ({isEn ? 'Type' : 'Tipo'} {document.receptor.tipoIdentificacion})
                   </div>
                   <div className="text-slate-400 text-[11px] mt-0.5">{document.receptor.correo}</div>
                   <div className="mt-2 text-[10px] text-blue-400 bg-blue-500/10 inline-block px-2 py-0.5 rounded border border-blue-500/20">
-                    Condición: {document.condicionVenta === '01' ? 'Contado' : 'Crédito'} · {document.medioPago === '04' ? 'SINPE Móvil / Transferencia' : 'Tarjeta'}
+                    {isEn ? 'Terms' : 'Condición'}: {document.condicionVenta === '01' ? (isEn ? 'Cash' : 'Contado') : (isEn ? 'Credit' : 'Crédito')} · {document.medioPago === '05' ? 'SINPE Móvil' : document.medioPago === '04' ? (isEn ? 'Bank Transfer' : 'Transferencia') : (isEn ? 'Card' : 'Tarjeta')}
                   </div>
                 </div>
               </div>
@@ -261,10 +265,10 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
                     <tr>
                       <th className="py-2 px-3">#</th>
                       <th className="py-2 px-3">CABYS</th>
-                      <th className="py-2 px-3">Detalle</th>
-                      <th className="py-2 px-3 text-right">Cant</th>
-                      <th className="py-2 px-3 text-right">Precio Unit.</th>
-                      <th className="py-2 px-3 text-right">Tarifa IVA</th>
+                      <th className="py-2 px-3">{isEn ? 'Detail' : 'Detalle'}</th>
+                      <th className="py-2 px-3 text-right">{isEn ? 'Qty' : 'Cant'}</th>
+                      <th className="py-2 px-3 text-right">{isEn ? 'Unit Price' : 'Precio Unit.'}</th>
+                      <th className="py-2 px-3 text-right">{isEn ? 'VAT Rate' : 'Tarifa IVA'}</th>
                       <th className="py-2 px-3 text-right">IVA</th>
                       <th className="py-2 px-3 text-right">Total</th>
                     </tr>
@@ -276,10 +280,10 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
                         <td className="py-2 px-3 text-emerald-400">{item.codigoCabys}</td>
                         <td className="py-2 px-3 font-sans text-slate-200">{item.detalle}</td>
                         <td className="py-2 px-3 text-right">{item.cantidad}</td>
-                        <td className="py-2 px-3 text-right">{item.precioUnitario.toLocaleString('es-CR')}</td>
+                        <td className="py-2 px-3 text-right">{item.precioUnitario.toLocaleString(isEn ? 'en-US' : 'es-CR')}</td>
                         <td className="py-2 px-3 text-right">{item.tarifaIva}%</td>
-                        <td className="py-2 px-3 text-right text-indigo-300">{item.montoIva.toLocaleString('es-CR')}</td>
-                        <td className="py-2 px-3 text-right font-bold text-white">{item.montoTotalLinea.toLocaleString('es-CR')}</td>
+                        <td className="py-2 px-3 text-right text-indigo-300">{item.montoIva.toLocaleString(isEn ? 'en-US' : 'es-CR')}</td>
+                        <td className="py-2 px-3 text-right font-bold text-white">{item.montoTotalLinea.toLocaleString(isEn ? 'en-US' : 'es-CR')}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -295,13 +299,13 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
                   </div>
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">
-                      Código QR de Validación Fiscal
+                      {isEn ? 'Tax Verification QR Code' : 'Código QR de Validación Fiscal'}
                     </span>
                     <p className="text-[11px] text-slate-500 max-w-xs truncate font-mono mt-0.5">
                       {qrVerificationUrl}
                     </p>
                     <span className="text-[10px] text-emerald-400 block mt-1">
-                      Resolución DGT-R-033-2019
+                      Resolución DGT-R-033-2019 / DGT-R-028-2023
                     </span>
                   </div>
                 </div>
@@ -309,20 +313,20 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
                 {/* Totals */}
                 <div className="w-full sm:w-64 space-y-1 font-mono text-xs">
                   <div className="flex justify-between text-slate-400">
-                    <span>Subtotal Gravado:</span>
-                    <span>{document.moneda} {document.resumen.totalGravado.toLocaleString('es-CR', { minimumFractionDigits: 2 })}</span>
+                    <span>{isEn ? 'Taxable Subtotal:' : 'Subtotal Gravado:'}</span>
+                    <span>{document.moneda} {document.resumen.totalGravado.toLocaleString(isEn ? 'en-US' : 'es-CR', { minimumFractionDigits: 2 })}</span>
                   </div>
                   <div className="flex justify-between text-slate-400">
-                    <span>Subtotal Exento:</span>
-                    <span>{document.moneda} {document.resumen.totalExento.toLocaleString('es-CR', { minimumFractionDigits: 2 })}</span>
+                    <span>{isEn ? 'Exempt Subtotal:' : 'Subtotal Exento:'}</span>
+                    <span>{document.moneda} {document.resumen.totalExento.toLocaleString(isEn ? 'en-US' : 'es-CR', { minimumFractionDigits: 2 })}</span>
                   </div>
                   <div className="flex justify-between text-indigo-300 font-semibold">
-                    <span>Total IVA:</span>
-                    <span>{document.moneda} {document.resumen.totalImpuesto.toLocaleString('es-CR', { minimumFractionDigits: 2 })}</span>
+                    <span>{isEn ? 'Total VAT:' : 'Total IVA:'}</span>
+                    <span>{document.moneda} {document.resumen.totalImpuesto.toLocaleString(isEn ? 'en-US' : 'es-CR', { minimumFractionDigits: 2 })}</span>
                   </div>
                   <div className="flex justify-between text-white font-bold text-sm pt-2 border-t border-slate-800">
-                    <span>Total Comprobante:</span>
-                    <span className="text-emerald-400">{document.moneda} {document.resumen.totalComprobante.toLocaleString('es-CR', { minimumFractionDigits: 2 })}</span>
+                    <span>{isEn ? 'Total Invoice:' : 'Total Comprobante:'}</span>
+                    <span className="text-emerald-400">{document.moneda} {document.resumen.totalComprobante.toLocaleString(isEn ? 'en-US' : 'es-CR', { minimumFractionDigits: 2 })}</span>
                   </div>
                 </div>
               </div>
@@ -333,18 +337,18 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-slate-400 font-mono">
-                  Firma XAdES-EPES (SHA-256 Digest: {document.digestValue?.slice(0, 32)}...)
+                  {isEn ? 'XAdES-EPES Digital Signature' : 'Firma XAdES-EPES'} (SHA-256 Digest: {document.digestValue?.slice(0, 32)}...)
                 </span>
                 <button
                   onClick={() => handleDownloadXml(document.xmlFirmado || '', `${document.clave}-firmado.xml`)}
-                  className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center space-x-1"
+                  className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center space-x-1 cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>Descargar XML Firmado</span>
+                  <span>{isEn ? 'Download Signed XML' : 'Descargar XML Firmado'}</span>
                 </button>
               </div>
               <pre className="bg-slate-950 p-4 rounded-xl border border-slate-800 text-[11px] font-mono text-emerald-300 overflow-x-auto max-h-96 whitespace-pre leading-relaxed">
-                {document.xmlFirmado || 'Documento aún no firmado digitalmente.'}
+                {document.xmlFirmado || (isEn ? 'Document not digitally signed yet.' : 'Documento aún no firmado digitalmente.')}
               </pre>
             </div>
           )}
@@ -353,14 +357,14 @@ export const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
             <div>
               <div className="mb-2">
                 <span className="text-xs text-slate-400">
-                  {document.haciendaMensaje || 'Esperando respuesta del servidor de validación asíncrona de Hacienda.'}
+                  {document.haciendaMensaje || (isEn ? 'Awaiting response from Hacienda asynchronous validation server.' : 'Esperando respuesta del servidor de validación asíncrona de Hacienda.')}
                 </span>
               </div>
               <pre className="bg-slate-950 p-4 rounded-xl border border-slate-800 text-[11px] font-mono text-blue-300 overflow-x-auto max-h-96 whitespace-pre leading-relaxed">
                 {document.haciendaRespuestaXml ||
                   (document.estado === 'procesando'
-                    ? '<!-- Documento en cola de validación asíncrona. La RespuestaHacienda se registrará una vez autorizada. -->'
-                    : document.haciendaDetalle || '<!-- Sin respuesta oficial registrada -->')}
+                    ? (isEn ? '<!-- Document in asynchronous validation queue. Hacienda official response will register upon completion. -->' : '<!-- Documento en cola de validación asíncrona. La RespuestaHacienda se registrará una vez autorizada. -->')
+                    : document.haciendaDetalle || (isEn ? '<!-- No official response recorded -->' : '<!-- Sin respuesta oficial registrada -->'))}
               </pre>
             </div>
           )}
