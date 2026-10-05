@@ -587,8 +587,8 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = ({
 
       {/* CABYS Modal */}
       {activeItemIndexForCabys !== null && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className={`border rounded-xl w-full max-w-2xl overflow-hidden shadow-2xl ${
+        <div className={`fixed inset-0 ${isBright ? 'bg-slate-900/50' : 'bg-black/70'} backdrop-blur-xs flex items-center justify-center z-50 p-4`}>
+          <div className={`border rounded-xl w-full max-w-2xl overflow-hidden shadow-2xl transition-colors ${
             isBright ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-900 border-slate-700 text-white'
           }`}>
             <div className={`p-4 border-b flex items-center justify-between ${
@@ -596,9 +596,14 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = ({
             }`}>
               <div className="flex items-center space-x-2">
                 <Search className="w-4 h-4 text-emerald-500" />
-                <span className="text-sm font-bold">{t.searchCabys}</span>
+                <span className={`text-sm font-bold ${isBright ? 'text-slate-900' : 'text-white'}`}>{t.searchCabys}</span>
               </div>
-              <button onClick={() => setActiveItemIndexForCabys(null)} className="text-slate-400 hover:text-white text-xs px-2 py-1">
+              <button
+                onClick={() => setActiveItemIndexForCabys(null)}
+                className={`text-xs px-2 py-1 rounded transition-colors cursor-pointer ${
+                  isBright ? 'text-slate-500 hover:text-slate-800 hover:bg-slate-200' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
+              >
                 {t.close}
               </button>
             </div>
@@ -610,10 +615,12 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = ({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar por código CABYS o nombre de bien/servicio..."
                 className={`w-full rounded-lg px-3 py-2 text-xs border focus:outline-none mb-3 ${
-                  isBright ? 'bg-slate-50 border-slate-300 text-slate-800' : 'bg-slate-800 border-slate-700 text-white'
+                  isBright ? 'bg-slate-50 border-slate-300 text-slate-900 focus:bg-white focus:border-emerald-500' : 'bg-slate-800 border-slate-700 text-white'
                 }`}
               />
-              <div className="max-h-72 overflow-y-auto divide-y divide-slate-800 border rounded-lg">
+              <div className={`max-h-72 overflow-y-auto divide-y border rounded-lg ${
+                isBright ? 'divide-slate-200 border-slate-200 bg-white' : 'divide-slate-800 border-slate-700 bg-slate-950/60'
+              }`}>
                 {searchCabys(searchQuery).map((item) => (
                   <div
                     key={item.codigo}
@@ -626,17 +633,23 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = ({
                       });
                       setActiveItemIndexForCabys(null);
                     }}
-                    className="p-3 hover:bg-emerald-500/10 cursor-pointer transition-colors flex items-center justify-between text-xs"
+                    className={`p-3 cursor-pointer transition-colors flex items-center justify-between text-xs ${
+                      isBright
+                        ? 'hover:bg-emerald-50/70 text-slate-800'
+                        : 'hover:bg-emerald-500/10 text-white'
+                    }`}
                   >
                     <div>
                       <div className="flex items-center space-x-2">
-                        <span className="font-mono font-bold text-emerald-500">{item.codigo}</span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">{item.categoria}</span>
+                        <span className="font-mono font-bold text-emerald-600 dark:text-emerald-500">{item.codigo}</span>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                          isBright ? 'bg-slate-100 text-slate-600 border border-slate-200' : 'bg-slate-800 text-slate-400'
+                        }`}>{item.categoria}</span>
                       </div>
-                      <p className="mt-1 line-clamp-1">{item.descripcion}</p>
+                      <p className={`mt-1 line-clamp-1 ${isBright ? 'text-slate-700' : 'text-slate-200'}`}>{item.descripcion}</p>
                     </div>
                     <div className="text-right shrink-0 ml-3">
-                      <span className="text-xs font-bold text-indigo-400">{item.tarifaIva}% IVA</span>
+                      <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">{item.tarifaIva}% IVA</span>
                     </div>
                   </div>
                 ))}

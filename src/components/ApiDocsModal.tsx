@@ -770,7 +770,7 @@ export const ApiDocsModal: React.FC<ApiDocsModalProps> = ({ lang, theme, onClose
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-xs flex items-center justify-center z-50 p-3 sm:p-5">
+    <div className={`fixed inset-0 ${isBright ? 'bg-slate-900/50' : 'bg-black/80'} backdrop-blur-xs flex items-center justify-center z-50 p-3 sm:p-5`}>
       <div
         className={`border rounded-2xl w-full max-w-5xl max-h-[92vh] overflow-hidden flex flex-col shadow-2xl transition-colors ${
           isBright ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-900 border-slate-700 text-slate-200'
@@ -969,7 +969,7 @@ export const ApiDocsModal: React.FC<ApiDocsModalProps> = ({ lang, theme, onClose
                         <div className={`p-4 border-t space-y-4 ${
                           isBright ? 'bg-white border-slate-200' : 'bg-slate-900/90 border-slate-800'
                         }`}>
-                          <p className="text-xs text-slate-300">
+                          <p className={`text-xs ${isBright ? 'text-slate-600' : 'text-slate-300'}`}>
                             {lang === 'en' ? ep.descEn : ep.descEs}
                           </p>
 
@@ -977,9 +977,13 @@ export const ApiDocsModal: React.FC<ApiDocsModalProps> = ({ lang, theme, onClose
                           <div className="flex items-center space-x-2">
                             <button
                               onClick={() => handleCopyCurl(ep)}
-                              className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded text-xs flex items-center space-x-1.5 transition-colors cursor-pointer"
+                              className={`px-2.5 py-1 text-xs rounded flex items-center space-x-1.5 transition-colors cursor-pointer border ${
+                                isBright
+                                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
+                                  : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                              }`}
                             >
-                              {copiedId === ep.id ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                              {copiedId === ep.id ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                               <span>{copiedId === ep.id ? (lang === 'en' ? 'Copied!' : '¡Copiado!') : (lang === 'en' ? 'Copy cURL' : 'Copiar cURL')}</span>
                             </button>
 

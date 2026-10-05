@@ -80,7 +80,24 @@ import {
 export default function App() {
   // Localization & Theme Preferences
   const [lang, setLang] = useState<Language>('en'); // Default to English per user request
-  const [theme, setTheme] = useState<'dark' | 'bright'>('dark');
+  const [theme, setTheme] = useState<'dark' | 'bright'>(() => {
+    try {
+      const saved = localStorage.getItem('cr_factura_theme');
+      return saved === 'dark' ? 'dark' : 'bright'; // Light theme is default
+    } catch {
+      return 'bright';
+    }
+  });
+
+  const handleToggleTheme = () => {
+    const next = theme === 'dark' ? 'bright' : 'dark';
+    setTheme(next);
+    try {
+      localStorage.setItem('cr_factura_theme', next);
+    } catch {
+      // Ignore storage errors
+    }
+  };
 
   // Navigation
   const [activeTab, setActiveTab] = useState<'emision' | 'recepcion' | 'bulk' | 'auditoria' | 'accountant' | 'lawyer' | 'admin'>('emision');
@@ -405,7 +422,7 @@ export default function App() {
         activeVersion={activeVersion}
         onSwitchVersion={handleSwitchVersion}
         onOpenVersionModal={() => setIsVersionModalOpen(true)}
-        onToggleTheme={() => setTheme(theme === 'dark' ? 'bright' : 'dark')}
+        onToggleTheme={handleToggleTheme}
         onToggleLang={() => setLang(lang === 'es' ? 'en' : 'es')}
         onSelectCompany={handleSelectCompany}
         onOpenNewCompany={() => setIsCompanyModalOpen(true)}
@@ -595,6 +612,7 @@ export default function App() {
         {activeTab === 'accountant' && (
           <AccountantDesk
             lang={lang}
+            theme={theme}
             company={company}
             documents={documents}
             receptions={receptions}
@@ -608,6 +626,7 @@ export default function App() {
         {activeTab === 'lawyer' && (
           <LawyerDesk
             lang={lang}
+            theme={theme}
             company={company}
             documents={documents}
           />
@@ -617,6 +636,7 @@ export default function App() {
         {activeTab === 'admin' && (
           <AdminHub
             lang={lang}
+            theme={theme}
             companies={companies}
             activeCompanyId={company?.id || 'COMP-1'}
             onActivateCompany={handleSelectCompany}
@@ -636,7 +656,7 @@ export default function App() {
       }`}>
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-3 text-center md:text-left">
           <div className="space-y-1">
-            <div className="font-semibold text-slate-700 dark:text-slate-300">
+            <div className={`font-semibold ${isBright ? 'text-slate-800' : 'text-slate-300'}`}>
               {t.footerAuthority}
             </div>
             <div className="text-[11px] text-slate-400">
@@ -644,7 +664,7 @@ export default function App() {
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 font-mono text-[11px]">
-            <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-sans">
+            <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 border border-emerald-500/20 font-sans">
               {t.footerEnvironment} (v{activeVersion})
             </span>
             <span className="text-slate-500">
@@ -658,6 +678,7 @@ export default function App() {
       {selectedDocument && (
         <DocumentDetailModal
           lang={lang}
+          theme={theme}
           document={selectedDocument}
           onClose={() => setSelectedDocument(null)}
         />
@@ -678,6 +699,7 @@ export default function App() {
       {isReportsOpen && (
         <ScheduledReportsModal
           lang={lang}
+          theme={theme}
           summary={taxSummary}
           taxpayer={company}
           documents={documents}
@@ -689,6 +711,7 @@ export default function App() {
       {isCompanyModalOpen && (
         <CompanyModal
           lang={lang}
+          theme={theme}
           onRegister={handleRegisterCompany}
           onClose={() => setIsCompanyModalOpen(false)}
           isSubmitting={isSavingCompany}
@@ -698,6 +721,7 @@ export default function App() {
       {isAuthModalOpen && (
         <AuthModal
           lang={lang}
+          theme={theme}
           currentUser={user}
           onSignIn={handleSignIn}
           onSignUp={handleSignUp}
@@ -730,17 +754,23 @@ export default function App() {
       {toast && (
         <div className={`fixed bottom-5 right-5 z-50 px-4 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2 text-xs font-semibold animate-slide-up border ${
           toast.type === 'error'
-            ? 'bg-slate-900 border-rose-500/50 text-rose-300'
+            ? isBright
+              ? 'bg-white border-rose-400 text-rose-800 shadow-rose-100'
+              : 'bg-slate-900 border-rose-500/50 text-rose-300'
             : toast.type === 'info'
-            ? 'bg-slate-900 border-sky-500/50 text-sky-300'
+            ? isBright
+              ? 'bg-white border-sky-400 text-sky-800 shadow-sky-100'
+              : 'bg-slate-900 border-sky-500/50 text-sky-300'
+            : isBright
+            ? 'bg-white border-emerald-400 text-emerald-800 shadow-emerald-100'
             : 'bg-slate-900 border-emerald-500/40 text-emerald-300'
         }`}>
           {toast.type === 'error' ? (
-            <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+            <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0" />
           ) : toast.type === 'info' ? (
-            <Info className="w-4 h-4 text-sky-400 shrink-0" />
+            <Info className="w-4 h-4 text-sky-500 shrink-0" />
           ) : (
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
           )}
           <span>{toast.message}</span>
         </div>

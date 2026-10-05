@@ -108,7 +108,7 @@ export const SandboxSettingsModal: React.FC<SandboxSettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+    <div className={`fixed inset-0 ${isBright ? 'bg-slate-900/50' : 'bg-black/80'} backdrop-blur-xs flex items-center justify-center z-50 p-4`}>
       <div
         className={`border rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl transition-colors ${
           isBright ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-900 border-slate-700 text-slate-200'
@@ -277,7 +277,7 @@ export const SandboxSettingsModal: React.FC<SandboxSettingsModalProps> = ({
               {/* Taxpayer Information */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-400 mb-1">{t.cfgTaxpayerName}</label>
+                  <label className={`block mb-1 ${isBright ? 'text-slate-700 font-medium' : 'text-slate-400'}`}>{t.cfgTaxpayerName}</label>
                   <input
                     type="text"
                     required
@@ -290,7 +290,7 @@ export const SandboxSettingsModal: React.FC<SandboxSettingsModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1">{t.cfgTaxpayerId}</label>
+                  <label className={`block mb-1 ${isBright ? 'text-slate-700 font-medium' : 'text-slate-400'}`}>{t.cfgTaxpayerId}</label>
                   <input
                     type="text"
                     required
@@ -303,7 +303,7 @@ export const SandboxSettingsModal: React.FC<SandboxSettingsModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1">{t.cfgEconomicCode}</label>
+                  <label className={`block mb-1 ${isBright ? 'text-slate-700 font-medium' : 'text-slate-400'}`}>{t.cfgEconomicCode}</label>
                   <input
                     type="text"
                     required
@@ -316,7 +316,7 @@ export const SandboxSettingsModal: React.FC<SandboxSettingsModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1">{t.cfgTaxRegime}</label>
+                  <label className={`block mb-1 ${isBright ? 'text-slate-700 font-medium' : 'text-slate-400'}`}>{t.cfgTaxRegime}</label>
                   <select
                     value={regimenTributario}
                     onChange={(e) => setRegimenTributario(e.target.value as any)}
@@ -340,7 +340,7 @@ export const SandboxSettingsModal: React.FC<SandboxSettingsModalProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-slate-400 mb-1">{t.cfgAtvUsername}</label>
+                    <label className={`block mb-1 ${isBright ? 'text-slate-700 font-medium' : 'text-slate-400'}`}>{t.cfgAtvUsername}</label>
                     <input
                       type="text"
                       value={atvUsername}
@@ -353,7 +353,7 @@ export const SandboxSettingsModal: React.FC<SandboxSettingsModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-slate-400 mb-1">{t.cfgAtvPassword}</label>
+                    <label className={`block mb-1 ${isBright ? 'text-slate-700 font-medium' : 'text-slate-400'}`}>{t.cfgAtvPassword}</label>
                     <input
                       type="password"
                       value={atvPassword}
@@ -377,7 +377,7 @@ export const SandboxSettingsModal: React.FC<SandboxSettingsModalProps> = ({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-slate-400 mb-1">{t.cfgP12Pin}</label>
+                      <label className={`block mb-1 ${isBright ? 'text-slate-700 font-medium' : 'text-slate-400'}`}>{t.cfgP12Pin}</label>
                       <input
                         type="password"
                         maxLength={4}
@@ -391,7 +391,7 @@ export const SandboxSettingsModal: React.FC<SandboxSettingsModalProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-slate-400 mb-1">{t.cfgP12Upload}</label>
+                      <label className={`block mb-1 ${isBright ? 'text-slate-700 font-medium' : 'text-slate-400'}`}>{t.cfgP12Upload}</label>
                       <label className={`flex items-center justify-center space-x-2 px-3 py-1.5 rounded cursor-pointer transition-colors border ${
                         isBright ? 'bg-white hover:bg-slate-100 border-slate-300 text-slate-700' : 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-300'
                       }`}>

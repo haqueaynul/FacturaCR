@@ -92,7 +92,7 @@ export const VersionComparisonModal: React.FC<VersionComparisonModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+    <div className={`fixed inset-0 ${isBright ? 'bg-slate-900/50' : 'bg-black/80'} backdrop-blur-xs flex items-center justify-center z-50 p-4`}>
       <div
         className={`border rounded-2xl w-full max-w-4xl max-h-[92vh] overflow-hidden flex flex-col shadow-2xl transition-colors ${
           isBright ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-900 border-slate-700 text-slate-200'
@@ -285,7 +285,7 @@ export const VersionComparisonModal: React.FC<VersionComparisonModalProps> = ({
                           : 'hover:bg-slate-800/30'
                       }
                     >
-                      <td className="py-2.5 px-3 font-semibold text-slate-200">
+                      <td className={`py-2.5 px-3 font-semibold ${isBright ? 'text-slate-900' : 'text-slate-200'}`}>
                         <span className={isBright ? 'text-slate-900' : 'text-white'}>{row.feature}</span>
                       </td>
                       <td className="py-2.5 px-3 text-slate-400 font-mono text-[11px]">{row.v43}</td>
