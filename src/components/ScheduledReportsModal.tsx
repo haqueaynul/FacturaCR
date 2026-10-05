@@ -173,16 +173,16 @@ export const ScheduledReportsModal: React.FC<ScheduledReportsModalProps> = ({
               {/* Net Payable / In Favor */}
               <div
                 className={`p-4 flex justify-between items-center font-bold text-sm ${
-                  isBright ? 'bg-slate-50 text-slate-900 border-t border-slate-200' : 'bg-slate-900 text-white'
+                  isBright ? 'bg-emerald-50/90 text-emerald-950 border-t border-emerald-200' : 'bg-slate-900 text-white'
                 }`}
               >
                 <div>
-                  <span className="font-sans">{isEn ? 'Net VAT Balance to Declare / Pay to Tax Authority' : 'Saldo Neto IVA a Declarar / Pagar al Fisco'}</span>
-                  <span className={`text-[11px] block font-sans font-normal ${isBright ? 'text-slate-500' : 'text-slate-400'}`}>
+                  <span className="font-sans font-bold">{isEn ? 'Net VAT Balance to Declare / Pay to Tax Authority' : 'Saldo Neto IVA a Declarar / Pagar al Fisco'}</span>
+                  <span className={`text-[11px] block font-sans font-normal ${isBright ? 'text-emerald-800 font-medium' : 'text-slate-400'}`}>
                     {isEn ? 'Formulario D-104 Return Line' : 'Línea de Declaración Formulario D-104'}
                   </span>
                 </div>
-                <span className="text-emerald-600 dark:text-emerald-400 font-mono text-base">
+                <span className="text-emerald-700 dark:text-emerald-400 font-mono text-base font-extrabold">
                   {formatCurrency(summary?.balanceIvaPagar || 0)}
                 </span>
               </div>

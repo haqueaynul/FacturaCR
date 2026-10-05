@@ -241,33 +241,37 @@ export const AccountantDesk: React.FC<AccountantDeskProps> = ({
 
           {/* Net Balance Statement Card */}
           <div
-            className={`p-5 rounded-xl border flex flex-col sm:flex-row items-center justify-between gap-4 ${
-              isBright ? 'bg-slate-50 border-slate-200' : 'bg-slate-950 border-slate-800'
+            className={`p-5 rounded-xl border flex flex-col sm:flex-row items-center justify-between gap-4 transition-all shadow-sm ${
+              isBright
+                ? 'bg-gradient-to-r from-emerald-50 via-white to-teal-50/60 border-emerald-300 text-slate-900'
+                : 'bg-slate-950 border-slate-800 text-slate-200'
             }`}
           >
             <div>
               <div className="flex items-center space-x-2">
-                <Scale className="w-5 h-5 text-emerald-500" />
-                <span className={`text-sm font-bold ${isBright ? 'text-slate-900' : 'text-white'}`}>
+                <Scale className={`w-5 h-5 ${isBright ? 'text-emerald-700' : 'text-emerald-400'}`} />
+                <span className={`text-sm font-bold ${isBright ? 'text-emerald-950 font-extrabold' : 'text-white'}`}>
                   {lang === 'en' ? 'Net VAT Liability for Formulario D-104' : 'Saldo Neto de IVA para Declaración Formulario D-104'}
                 </span>
               </div>
-              <p className={`text-xs mt-1 ${isBright ? 'text-slate-600' : 'text-slate-400'}`}>
+              <p className={`text-xs mt-1 font-medium ${isBright ? 'text-slate-700' : 'text-slate-400'}`}>
                 Fórmula oficial: Débito Fiscal (₡{(summary?.ivaDebitoFiscal || 0).toLocaleString('es-CR')}) - Crédito Fiscal (₡{(summary?.ivaCreditoFiscal || 0).toLocaleString('es-CR')})
               </p>
               {cpaSignoff && (
-                <div className="mt-2 text-xs text-emerald-600 dark:text-emerald-400 flex items-center space-x-1 font-mono font-medium">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
+                <div className={`mt-2 text-xs flex items-center space-x-1 font-mono font-semibold ${
+                  isBright ? 'text-emerald-800' : 'text-emerald-400'
+                }`}>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                   <span>Certificado y firmado digitalmente por Contador Público Autorizado (CPA-CR-18920).</span>
                 </div>
               )}
             </div>
 
             <div className="text-right">
-              <span className={`text-[10px] uppercase font-bold block ${isBright ? 'text-slate-500' : 'text-slate-500'}`}>
+              <span className={`text-[10px] uppercase font-bold block ${isBright ? 'text-emerald-800 font-extrabold' : 'text-slate-400'}`}>
                 {lang === 'en' ? 'Net Amount to Pay / Credit' : 'Monto Neto a Pagar'}
               </span>
-              <span className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
+              <span className={`text-2xl font-extrabold font-mono ${isBright ? 'text-emerald-700' : 'text-emerald-400'}`}>
                 {formatCurrency(summary?.balanceIvaPagar || 0)}
               </span>
             </div>

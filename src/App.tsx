@@ -445,6 +445,7 @@ export default function App() {
         {/* Automated Next-Step Suggestion Guide */}
         <StepGuideBanner
           lang={lang}
+          theme={theme}
           latestDoc={latestDoc}
           onActionClick={handleGuideAction}
           onDismiss={() => setIsGuideDismissed(true)}

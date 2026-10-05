@@ -224,11 +224,21 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = ({
 
       {/* Beginner Explanation & Helper Box */}
       {activeTooltip && (
-        <div className="mb-4 p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-indigo-400 text-xs flex items-start space-x-2.5">
-          <Info className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
-          <div>
-            <span className="font-semibold block">{lang === 'en' ? 'Field Explanation & Tax Rule:' : 'Explicación del Campo y Regla Tributaria:'}</span>
-            <span className="text-slate-300 text-[11px]">{activeTooltip}</span>
+        <div
+          className={`mb-4 p-3.5 rounded-xl border flex items-start space-x-3 transition-all shadow-xs ${
+            isBright
+              ? 'bg-blue-50/90 border-blue-200 text-slate-900'
+              : 'bg-indigo-950/40 border-indigo-500/30 text-slate-200'
+          }`}
+        >
+          <Info className={`w-4 h-4 shrink-0 mt-0.5 ${isBright ? 'text-blue-600' : 'text-indigo-400'}`} />
+          <div className="flex-1">
+            <span className={`font-bold text-xs block mb-0.5 tracking-tight ${isBright ? 'text-blue-950' : 'text-indigo-200'}`}>
+              {lang === 'en' ? 'Field Explanation & Tax Rule:' : 'Explicación del Campo y Regla Tributaria:'}
+            </span>
+            <span className={`text-xs leading-relaxed ${isBright ? 'text-slate-800 font-medium' : 'text-slate-200'}`}>
+              {activeTooltip}
+            </span>
           </div>
         </div>
       )}
